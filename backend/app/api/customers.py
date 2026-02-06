@@ -9,7 +9,8 @@ from app.schemas.customer import CustomerSchema
 def get_user_company_id():
     """Obter company_id do usuário logado"""
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
+    user = User.query.get(int(user_id))  
+    
     if not user or not user.company_id:
         return None
     return user.company_id

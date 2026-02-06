@@ -223,6 +223,202 @@ Deletar um cliente.
   "message": "Cliente deletado com sucesso"
 }
 ```
+---
+
+## 📅 Appointments - Agendamentos
+
+### GET /appointments
+Listar agendamentos da empresa (com paginação e filtros).
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Query Params:**
+- `page` (opcional): Número da página (padrão: 1)
+- `per_page` (opcional): Itens por página (padrão: 20)
+- `date` (opcional): Filtrar por data (formato: YYYY-MM-DD)
+- `status` (opcional): Filtrar por status (pending, confirmed, etc)
+- `customer_id` (opcional): Filtrar por cliente
+
+**Exemplos:**
+```bash
+# Listar todos
+GET /appointments
+
+# Filtrar por data
+GET /appointments?date=2026-02-05
+
+# Filtrar por status
+GET /appointments?status=confirmed
+
+# Combinar filtros
+GET /appointments?date=2026-02-05&status=pending
+```
+
+**Response (200):**
+```json
+{
+  "appointments": [
+    {
+      "id": 1,
+      "appointment_date": "2026-02-05",
+      "appointment_time": "14:00:00",
+      "duration_minutes": 60,
+      "service_name": "Corte de Cabelo",
+      "service_price": 50.0,
+      "status": "confirmed",
+      "notes": "Cliente prefere tesoura",
+      "customer": {
+        "id": 2,
+        "name": "Maria Santos",
+        "email": "maria@email.com",
+        "phone": "(41) 99876-5432"
+      }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "per_page": 20,
+  "pages": 1
+}
+```
+
+---
+
+### GET /appointments/today
+Listar agendamentos de hoje.
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Response (200):**
+```json
+{
+  "date": "2026-02-05",
+  "appointments": [...],
+  "total": 3
+}
+```
+
+---
+
+### GET /appointments/availability
+Verificar horários disponíveis em uma data.
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Query Params:**
+- `date` (obrigatório): Data para verificar (YYYY-MM-DD)
+
+**Exemplo:**
+```bash
+GET /appointments/availability?date=2026-02-05
+```
+
+**Response (200):**
+```json
+{
+  "date": "2026-02-05",
+  "available_slots": [
+    "09:00:00",
+    "09:30:00",
+    "10:00:00",
+    "15:00:00",
+    "15:30:00"
+  ],
+  "busy_slots": [
+    {
+      "start": "14:00:00",
+      "end": "15:00:00",
+      "appointment_id": 1
+    }
+  ]
+}
+```
+
+---
+
+### POST /appointments
+Criar novo agendamento.
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Request:**
+```json
+{
+  "customer_id": 2,
+  "appointment_date": "2026-02-05",
+  "appointment_time": "14:00",
+  "duration_minutes": 60,
+  "service_name": "Corte de Cabelo",
+  "service_price": 50.00,
+  "notes": "Cliente prefere tesoura"
+}
+```
+
+**Campos obrigatórios:**
+- `customer_id`
+- `appointment_date` (formato: YYYY-MM-DD)
+- `appointment_time` (formato: HH:MM)
+- `service_name`
+
+**Response (201):**
+```json
+{
+  "message": "Agendamento criado com sucesso",
+  "appointment": { ... }
+}
+```
+
+**Errors:**
+- `404`: Cliente não encontrado
+- `409`: Conflito de horário
+
+---
+
+### PUT /appointments/:id
+Atualizar agendamento.
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Request:**
+```json
+{
+  "status": "confirmed",
+  "notes": "Cliente confirmou por WhatsApp"
+}
+```
+
+**Status disponíveis:**
+- `pending`: Pendente
+- `confirmed`: Confirmado
+- `in_progress`: Em andamento
+- `completed`: Concluído
+- `cancelled`: Cancelado
+- `no_show`: Cliente não compareceu
+
+**Response (200):**
+```json
+{
+  "message": "Agendamento atualizado com sucesso",
+  "appointment": { ... }
+}
+```
+
+---
+
+### DELETE /appointments/:id
+Deletar agendamento.
+
+**Headers:** `Authorization: Bearer TOKEN`
+
+**Response (200):**
+```json
+{
+  "message": "Agendamento deletado com sucesso"
+}
+```
+
+---
+````
 
 ---
 
