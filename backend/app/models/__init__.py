@@ -4,5 +4,6 @@ from app.models.customer import Customer
 from app.models.appointment import Appointment
 from app.models.product import Product
 from app.models.stock_movement import StockMovement
+from app.models.business_config import BusinessConfig
 
-__all__ = ['User', 'Company', 'Customer', 'Appointment', 'Product', 'StockMovement']
+__all__ = ['User', 'Company', 'Customer', 'Appointment', 'Product', 'StockMovement', 'BusinessConfig']
