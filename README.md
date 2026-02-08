@@ -1,4 +1,4 @@
-# Business
+# Busisness
 
 Sistema de gestão multi-negócio para pequenas empresas (restaurantes, barbearias, estúdios de tatuagem, distribuidoras).
 
