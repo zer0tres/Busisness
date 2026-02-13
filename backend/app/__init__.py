@@ -20,9 +20,15 @@ def create_app(config_name='default'):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app)
-
-    # ✨ NOVO: Configurar logging
+    
+    # Configurar CORS - PERMITIR TODAS as origens em desenvolvimento
+    CORS(app, 
+         origins="*",
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         supports_credentials=False)
+    
+    # Configurar logging
     if config_name != 'testing':
         from app.utils.logger import setup_logger
         setup_logger(app)
@@ -36,7 +42,7 @@ def create_app(config_name='default'):
     def health():
         return {'status': 'ok', 'message': 'Business Suite API is running'}, 200
     
-    # ✨ NOVO: Error handlers
+    # Error handlers
     @app.errorhandler(404)
     def not_found(error):
         return {'error': 'Recurso não encontrado'}, 404
