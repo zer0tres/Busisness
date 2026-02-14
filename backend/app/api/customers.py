@@ -164,25 +164,21 @@ def update_customer(customer_id):
 @api_bp.route('/customers/<int:customer_id>', methods=['DELETE'])
 @jwt_required()
 def delete_customer(customer_id):
-    """Deletar cliente"""
+    """Deletar cliente (soft delete)"""
     company_id = get_user_company_id()
-    if not company_id:
-        return jsonify({'error': 'Usuário sem empresa associada'}), 403
     
-    customer = Customer.query.filter_by(
-        id=customer_id,
-        company_id=company_id
-    ).first()
+    customer = Customer.query.filter_by(id=customer_id, company_id=company_id).first()
     
     if not customer:
         return jsonify({'error': 'Cliente não encontrado'}), 404
     
     try:
-        db.session.delete(customer)
+        # Soft delete - apenas marca como inativo
+        customer.is_active = False
         db.session.commit()
         
-        return jsonify({'message': 'Cliente deletado com sucesso'}), 200
+        return jsonify({'message': 'Cliente desativado com sucesso'}), 200
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': f'Erro ao deletar cliente: {str(e)}'}), 500
+        return jsonify({'error': f'Erro ao desativar cliente: {str(e)}'}), 500

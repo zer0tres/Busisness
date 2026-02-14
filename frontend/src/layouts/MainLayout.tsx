@@ -37,7 +37,7 @@ export default function MainLayout() {
       <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200">
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-primary-600">Business Suite</h1>
+          <h1 className="text-xl font-bold text-primary-600">Busisness</h1>
           <p className="text-sm text-gray-600 mt-1">{company?.name}</p>
         </div>
 
@@ -92,7 +92,7 @@ export default function MainLayout() {
             {/* Header Mobile */}
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-primary-600">Business Suite</h1>
+                <h1 className="text-xl font-bold text-primary-600">Busisness</h1>
                 <p className="text-sm text-gray-600 mt-1">{company?.name}</p>
               </div>
               <button onClick={() => setSidebarOpen(false)}>

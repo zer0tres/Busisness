@@ -75,6 +75,7 @@ export interface Product {
   sale_price?: number;
   category?: string;
   sku?: string;
+  barcode?: string;
   is_low_stock: boolean;
   stock_value: number;
 }
