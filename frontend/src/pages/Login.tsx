@@ -9,8 +9,8 @@ export default function Login() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@business.com'); // ✅ PRÉ-PREENCHIDO
+  const [password, setPassword] = useState('admin123'); // ✅ PRÉ-PREENCHIDO
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,18 +19,24 @@ export default function Login() {
     setError('');
     setLoading(true);
 
+    console.log('🔐 Tentando login...', { email, api_url: api.defaults.baseURL });
+
     try {
       const response = await api.post<LoginResponse>('/auth/login', {
         email,
         password,
       });
 
+      console.log('✅ Login bem-sucedido!', response.data);
+
       const { user, company, access_token, refresh_token } = response.data;
       
       setAuth(user, company, access_token, refresh_token);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Erro ao fazer login');
+      console.error('❌ Erro completo:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Erro ao fazer login';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -89,7 +95,7 @@ export default function Login() {
           {/* Erro */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}

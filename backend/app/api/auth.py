@@ -6,9 +6,14 @@ from app.models.user import User
 from app.models.company import Company
 from app.schemas.auth import RegisterSchema, LoginSchema
 
-@api_bp.route('/auth/register', methods=['POST'])
+@api_bp.route('/auth/register', methods=['POST', 'OPTIONS'])
 def register():
     """Registrar novo usuário"""
+    
+    # Responder ao preflight CORS
+    if request.method == 'OPTIONS':
+        return '', 200
+    
     data = request.get_json()
     
     # Validar dados
@@ -24,10 +29,8 @@ def register():
         # Criar empresa se fornecida
         company = None
         if data.get('company_name'):
-            # Gerar slug a partir do nome da empresa
             slug = data['company_name'].lower().replace(' ', '-')
             
-            # Verificar se slug já existe
             counter = 1
             original_slug = slug
             while Company.query.filter_by(slug=slug).first():
@@ -40,7 +43,7 @@ def register():
                 business_type=data.get('business_type', 'other')
             )
             db.session.add(company)
-            db.session.flush()  # Para obter o ID da empresa
+            db.session.flush()
         
         # Criar usuário
         user = User(
@@ -69,9 +72,14 @@ def register():
         db.session.rollback()
         return jsonify({'error': f'Erro ao criar usuário: {str(e)}'}), 500
 
-@api_bp.route('/auth/login', methods=['POST'])
+@api_bp.route('/auth/login', methods=['POST', 'OPTIONS'])
 def login():
     """Login de usuário"""
+    
+    # ✅ Responder ao preflight CORS
+    if request.method == 'OPTIONS':
+        return '', 200
+    
     data = request.get_json()
     
     # Validar dados
@@ -94,7 +102,7 @@ def login():
     access_token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
     
-    # Buscar empresa se existir
+    # Buscar empresa
     company = Company.query.get(user.company_id) if user.company_id else None
     
     return jsonify({
@@ -105,10 +113,14 @@ def login():
         'refresh_token': refresh_token
     }), 200
 
-@api_bp.route('/auth/me', methods=['GET'])
+@api_bp.route('/auth/me', methods=['GET', 'OPTIONS'])
 @jwt_required()
 def get_current_user():
     """Obter dados do usuário logado"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
     user_id = get_jwt_identity()
     user = User.query.get(int(user_id))
     
@@ -122,10 +134,14 @@ def get_current_user():
         'company': company.to_dict() if company else None
     }), 200
 
-@api_bp.route('/auth/refresh', methods=['POST'])
+@api_bp.route('/auth/refresh', methods=['POST', 'OPTIONS'])
 @jwt_required(refresh=True)
 def refresh():
-    """Renovar access token usando refresh token"""
+    """Renovar access token"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
     user_id = get_jwt_identity()
     access_token = create_access_token(identity=user_id)
     
