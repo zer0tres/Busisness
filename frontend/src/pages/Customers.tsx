@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Users, Plus, Search, Edit, Trash2, X } from 'lucide-react';
 import api from '../services/api';
 import type { Customer } from '../types';
+import { toast } from 'sonner';
+import ConfirmDialog from '../components/ConfirmDialog';
+import TableSkeleton from '../components/TableSkeleton';
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -9,6 +12,10 @@ export default function Customers() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; customer: Customer | null }>({
+    isOpen: false,
+    customer: null
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,6 +36,7 @@ export default function Customers() {
       setCustomers(response.data.customers || []);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
+      toast.error('Erro ao carregar clientes');
     } finally {
       setLoading(false);
     }
@@ -41,6 +49,7 @@ export default function Customers() {
       setCustomers(response.data.customers || []);
     } catch (error) {
       console.error('Erro na busca:', error);
+      toast.error('Erro ao buscar clientes');
     } finally {
       setLoading(false);
     }
@@ -87,39 +96,53 @@ export default function Customers() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const loadingToast = toast.loading(
+      editingCustomer ? 'Salvando alterações...' : 'Criando cliente...'
+    );
+
     try {
       if (editingCustomer) {
-        // Editar
         await api.put(`/customers/${editingCustomer.id}`, formData);
+        toast.success('Cliente atualizado com sucesso!', { id: loadingToast });
       } else {
-        // Criar
         await api.post('/customers', formData);
+        toast.success('Cliente criado com sucesso!', { id: loadingToast });
       }
       
       handleCloseModal();
       loadCustomers();
     } catch (error: any) {
       console.error('Erro ao salvar cliente:', error);
-      alert(error.response?.data?.error || 'Erro ao salvar cliente');
+      toast.error(error.response?.data?.error || 'Erro ao salvar cliente', { id: loadingToast });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+    const loadingToast = toast.loading('Excluindo cliente...');
     
     try {
       await api.delete(`/customers/${id}`);
+      toast.success('Cliente excluído com sucesso!', { id: loadingToast });
+      setDeleteModal({ isOpen: false, customer: null });
       loadCustomers();
     } catch (error) {
       console.error('Erro ao deletar cliente:', error);
-      alert('Erro ao deletar cliente');
+      toast.error('Erro ao excluir cliente', { id: loadingToast });
     }
   };
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Clientes</h1>
+            <p className="text-gray-600 mt-1">Gerencie seus clientes</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <TableSkeleton rows={5} columns={5} />
+        </div>
       </div>
     );
   }
@@ -219,7 +242,7 @@ export default function Customers() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(customer.id)}
+                        onClick={() => setDeleteModal({ isOpen: true, customer })}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Excluir"
                       >
@@ -351,6 +374,18 @@ export default function Customers() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação */}
+      <ConfirmDialog
+        isOpen={deleteModal.isOpen}
+        title="Excluir Cliente"
+        message={`Tem certeza que deseja excluir ${deleteModal.customer?.name}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        onConfirm={() => deleteModal.customer && handleDelete(deleteModal.customer.id)}
+        onCancel={() => setDeleteModal({ isOpen: false, customer: null })}
+      />
     </div>
   );
 }

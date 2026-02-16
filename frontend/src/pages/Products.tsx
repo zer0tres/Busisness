@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Edit, Trash2, X, TrendingDown } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, X, TrendingDown } from 'lucide-react';
 import api from '../services/api';
 import type { Product } from '../types';
+import { toast } from 'sonner';
+import ConfirmDialog from '../components/ConfirmDialog';
+import TableSkeleton from '../components/TableSkeleton';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -9,6 +12,10 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; product: Product | null }>({
+    isOpen: false,
+    product: null
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -33,6 +40,7 @@ export default function Products() {
       setProducts(response.data.products || []);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
+      toast.error('Erro ao carregar produtos');
     } finally {
       setLoading(false);
     }
@@ -45,6 +53,7 @@ export default function Products() {
       setProducts(response.data.products || []);
     } catch (error) {
       console.error('Erro na busca:', error);
+      toast.error('Erro ao buscar produtos');
     } finally {
       setLoading(false);
     }
@@ -91,37 +100,53 @@ export default function Products() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const loadingToast = toast.loading(
+      editingProduct ? 'Salvando alterações...' : 'Criando produto...'
+    );
+
     try {
       if (editingProduct) {
         await api.put(`/products/${editingProduct.id}`, formData);
+        toast.success('Produto atualizado com sucesso!', { id: loadingToast });
       } else {
         await api.post('/products', formData);
+        toast.success('Produto criado com sucesso!', { id: loadingToast });
       }
       
       handleCloseModal();
       loadProducts();
     } catch (error: any) {
       console.error('Erro ao salvar produto:', error);
-      alert(error.response?.data?.error || 'Erro ao salvar produto');
+      toast.error(error.response?.data?.error || 'Erro ao salvar produto', { id: loadingToast });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+    const loadingToast = toast.loading('Excluindo produto...');
     
     try {
       await api.delete(`/products/${id}`);
+      toast.success('Produto excluído com sucesso!', { id: loadingToast });
+      setDeleteModal({ isOpen: false, product: null });
       loadProducts();
     } catch (error) {
       console.error('Erro ao deletar produto:', error);
-      alert('Erro ao deletar produto');
+      toast.error('Erro ao excluir produto', { id: loadingToast });
     }
   };
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Produtos</h1>
+            <p className="text-gray-600 mt-1">Gerencie seu estoque</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <TableSkeleton rows={5} columns={6} />
+        </div>
       </div>
     );
   }
@@ -147,14 +172,13 @@ export default function Products() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Buscar por nome, código ou código de barras..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             />
           </div>
           <button
@@ -246,7 +270,7 @@ export default function Products() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => setDeleteModal({ isOpen: true, product })}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Excluir"
                       >
@@ -434,6 +458,18 @@ export default function Products() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação */}
+      <ConfirmDialog
+        isOpen={deleteModal.isOpen}
+        title="Excluir Produto"
+        message={`Tem certeza que deseja excluir ${deleteModal.product?.name}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        onConfirm={() => deleteModal.product && handleDelete(deleteModal.product.id)}
+        onCancel={() => setDeleteModal({ isOpen: false, product: null })}
+      />
     </div>
   );
 }

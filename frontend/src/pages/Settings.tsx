@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Building2, Clock, CheckSquare, FileText } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { toast } from 'sonner';
 
 interface BusinessConfig {
   modules: {
@@ -58,6 +59,7 @@ export default function Settings() {
       setConfig(response.data);
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
+      toast.error('Erro ao carregar configurações');
     } finally {
       setLoading(false);
     }
@@ -77,14 +79,16 @@ export default function Settings() {
       return;
     }
 
+    const loadingToast = toast.loading('Aplicando template...');
+
     try {
       setSaving(true);
       await api.post(`/config/apply-template/${templateKey}`);
+      toast.success('Template aplicado com sucesso!', { id: loadingToast });
       await loadConfig();
-      alert('Template aplicado com sucesso!');
     } catch (error) {
       console.error('Erro ao aplicar template:', error);
-      alert('Erro ao aplicar template');
+      toast.error('Erro ao aplicar template', { id: loadingToast });
     } finally {
       setSaving(false);
     }
@@ -93,13 +97,15 @@ export default function Settings() {
   const handleSaveConfig = async () => {
     if (!config) return;
 
+    const loadingToast = toast.loading('Salvando configurações...');
+
     try {
       setSaving(true);
       await api.put('/config', config);
-      alert('Configurações salvas com sucesso!');
+      toast.success('Configurações salvas com sucesso!', { id: loadingToast });
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
-      alert('Erro ao salvar configurações');
+      toast.error('Erro ao salvar configurações', { id: loadingToast });
     } finally {
       setSaving(false);
     }
@@ -118,8 +124,18 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+          <div className="h-4 bg-gray-100 rounded w-48 mb-6"></div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -260,7 +276,8 @@ export default function Settings() {
                     <button
                       key={key}
                       onClick={() => handleApplyTemplate(key)}
-                      className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition text-left"
+                      disabled={saving}
+                      className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition text-left disabled:opacity-50"
                     >
                       <h4 className="font-semibold text-gray-800 mb-2">{template.name}</h4>
                       <p className="text-xs text-gray-600">

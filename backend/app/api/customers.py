@@ -17,19 +17,17 @@ def get_user_company_id():
 
 @api_bp.route('/customers', methods=['GET'])
 @jwt_required()
-def list_customers():
-    """Listar clientes da empresa"""
+def get_customers():
+    """Listar clientes da empresa (apenas ativos)"""
     company_id = get_user_company_id()
     if not company_id:
         return jsonify({'error': 'Usuário sem empresa associada'}), 403
     
-    # Parâmetros de query
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
+    # Parâmetros de busca
     search = request.args.get('search', '')
     
-    # Query base
-    query = Customer.query.filter_by(company_id=company_id)
+    # Query base - APENAS CLIENTES ATIVOS
+    query = Customer.query.filter_by(company_id=company_id, is_active=True)
     
     # Busca por nome, email ou telefone
     if search:
@@ -41,17 +39,10 @@ def list_customers():
             )
         )
     
-    # Paginação
-    pagination = query.order_by(Customer.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
+    customers = query.order_by(Customer.created_at.desc()).all()
     
     return jsonify({
-        'customers': [c.to_dict() for c in pagination.items],
-        'total': pagination.total,
-        'page': page,
-        'per_page': per_page,
-        'pages': pagination.pages
+        'customers': [customer.to_dict() for customer in customers]
     }), 200
 
 @api_bp.route('/customers', methods=['POST'])
@@ -101,14 +92,17 @@ def get_customer(customer_id):
         return jsonify({'error': 'Usuário sem empresa associada'}), 403
     
     customer = Customer.query.filter_by(
-        id=customer_id, 
-        company_id=company_id
+        id=customer_id,
+        company_id=company_id,
+        is_active=True
     ).first()
     
     if not customer:
         return jsonify({'error': 'Cliente não encontrado'}), 404
     
-    return jsonify(customer.to_dict()), 200
+    return jsonify({
+        'customer': customer.to_dict()
+    }), 200
 
 @api_bp.route('/customers/<int:customer_id>', methods=['PUT'])
 @jwt_required()
@@ -147,8 +141,6 @@ def update_customer(customer_id):
             customer.address = data['address']
         if 'notes' in data:
             customer.notes = data['notes']
-        if 'is_active' in data:
-            customer.is_active = data['is_active']
         
         db.session.commit()
         
@@ -166,18 +158,25 @@ def update_customer(customer_id):
 def delete_customer(customer_id):
     """Deletar cliente (soft delete)"""
     company_id = get_user_company_id()
+    if not company_id:
+        return jsonify({'error': 'Usuário sem empresa associada'}), 403
     
-    customer = Customer.query.filter_by(id=customer_id, company_id=company_id).first()
+    customer = Customer.query.filter_by(
+        id=customer_id, 
+        company_id=company_id
+    ).first()
     
     if not customer:
         return jsonify({'error': 'Cliente não encontrado'}), 404
     
     try:
-        # Soft delete - apenas marca como inativo
+        # Soft delete - marca como inativo
         customer.is_active = False
         db.session.commit()
         
-        return jsonify({'message': 'Cliente desativado com sucesso'}), 200
+        return jsonify({
+            'message': 'Cliente desativado com sucesso'
+        }), 200
         
     except Exception as e:
         db.session.rollback()

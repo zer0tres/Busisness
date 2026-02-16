@@ -4,6 +4,9 @@ import api from '../services/api';
 import type { Appointment, Customer } from '../types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
+import ConfirmDialog from '../components/ConfirmDialog';
+import TableSkeleton from '../components/TableSkeleton';
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -13,6 +16,10 @@ export default function Appointments() {
   const [filterStatus, setFilterStatus] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; appointment: Appointment | null }>({
+    isOpen: false,
+    appointment: null
+  });
   const [formData, setFormData] = useState({
     customer_id: '',
     appointment_date: '',
@@ -36,6 +43,7 @@ export default function Appointments() {
       setAppointments(response.data.appointments || []);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
+      toast.error('Erro ao carregar agendamentos');
     } finally {
       setLoading(false);
     }
@@ -47,6 +55,7 @@ export default function Appointments() {
       setCustomers(response.data.customers || []);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
+      toast.error('Erro ao carregar clientes');
     }
   };
 
@@ -61,6 +70,7 @@ export default function Appointments() {
       setAppointments(response.data.appointments || []);
     } catch (error) {
       console.error('Erro ao filtrar:', error);
+      toast.error('Erro ao filtrar agendamentos');
     } finally {
       setLoading(false);
     }
@@ -104,6 +114,10 @@ export default function Appointments() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const loadingToast = toast.loading(
+      editingAppointment ? 'Salvando alterações...' : 'Criando agendamento...'
+    );
+
     const data = {
       ...formData,
       customer_id: parseInt(formData.customer_id),
@@ -113,27 +127,31 @@ export default function Appointments() {
     try {
       if (editingAppointment) {
         await api.put(`/appointments/${editingAppointment.id}`, data);
+        toast.success('Agendamento atualizado com sucesso!', { id: loadingToast });
       } else {
         await api.post('/appointments', data);
+        toast.success('Agendamento criado com sucesso!', { id: loadingToast });
       }
       
       handleCloseModal();
       loadAppointments();
     } catch (error: any) {
       console.error('Erro ao salvar agendamento:', error);
-      alert(error.response?.data?.error || 'Erro ao salvar agendamento');
+      toast.error(error.response?.data?.error || 'Erro ao salvar agendamento', { id: loadingToast });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
+    const loadingToast = toast.loading('Excluindo agendamento...');
     
     try {
       await api.delete(`/appointments/${id}`);
+      toast.success('Agendamento excluído com sucesso!', { id: loadingToast });
+      setDeleteModal({ isOpen: false, appointment: null });
       loadAppointments();
     } catch (error) {
       console.error('Erro ao deletar agendamento:', error);
-      alert('Erro ao deletar agendamento');
+      toast.error('Erro ao excluir agendamento', { id: loadingToast });
     }
   };
 
@@ -166,8 +184,16 @@ export default function Appointments() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Agendamentos</h1>
+            <p className="text-gray-600 mt-1">Gerencie sua agenda</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <TableSkeleton rows={5} columns={7} />
+        </div>
       </div>
     );
   }
@@ -326,7 +352,7 @@ export default function Appointments() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(appointment.id)}
+                        onClick={() => setDeleteModal({ isOpen: true, appointment })}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Excluir"
                       >
@@ -500,6 +526,18 @@ export default function Appointments() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação */}
+      <ConfirmDialog
+        isOpen={deleteModal.isOpen}
+        title="Excluir Agendamento"
+        message={`Tem certeza que deseja excluir o agendamento de ${deleteModal.appointment?.customer?.name || 'este cliente'}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        onConfirm={() => deleteModal.appointment && handleDelete(deleteModal.appointment.id)}
+        onCancel={() => setDeleteModal({ isOpen: false, appointment: null })}
+      />
     </div>
   );
 }
