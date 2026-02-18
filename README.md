@@ -53,12 +53,3 @@ docker-compose up -d
 
 MIT License
 
-[*] Instalar Python 3.11
-[*] Instalar Node.js 18+ e npm
-[] Instalar Git
-[] Instalar Docker Desktop
-[] Instalar VS Code + extensões essenciais
-[] Criar conta GitHub
-[] Criar conta Vercel (para frontend futuramente)
-[] Criar conta Railway/Render (para backend futuramente)
-
