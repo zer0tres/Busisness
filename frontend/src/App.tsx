@@ -8,6 +8,7 @@ import Appointments from './pages/Appointments';
 import Settings from './pages/Settings';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import FinancialDashboard from './pages/Financial/Dashboard';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="financial" element={<FinancialDashboard />} />
         </Route>
 
         {/* Rota 404 */}

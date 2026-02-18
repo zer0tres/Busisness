@@ -1,4 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { DollarSign } from 'lucide-react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -28,6 +29,7 @@ export default function MainLayout() {
     { path: '/customers', icon: Users, label: 'Clientes' },
     { path: '/appointments', icon: Calendar, label: 'Agendamentos' },
     { path: '/products', icon: Package, label: 'Produtos' },
+    { path: '/financial', icon: DollarSign, label: 'Financeiro' },
     { path: '/settings', icon: Settings, label: 'Configurações' },
   ];
 
