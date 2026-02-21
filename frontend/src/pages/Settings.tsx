@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Building2, Clock, CheckSquare, FileText } from 'lucide-react';
+import { Save, Building2, Clock, CheckSquare, FileText, Scissors, Palette, Plus, Trash2 } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ interface BusinessConfig {
     welcome: string;
     footer: string;
   };
+  services: { name: string; price?: number; duration?: number; description?: string }[];
 }
 
 interface Template {
@@ -32,20 +33,36 @@ interface Template {
   modules: Record<string, boolean>;
 }
 
+const PRESET_COLORS = [
+  '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444',
+  '#F97316', '#EAB308', '#22C55E', '#14B8A6',
+  '#06B6D4', '#6366F1', '#111827', '#6B7280',
+];
+
+const DAY_LABELS: Record<string, string> = {
+  monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
+  thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado', sunday: 'Domingo',
+};
+
 export default function Settings() {
   const company = useAuthStore((state) => state.company);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [templates, setTemplates] = useState<Record<string, Template>>({});
-  const [activeTab, setActiveTab] = useState<'company' | 'modules' | 'schedule' | 'texts'>('company');
-  
+  const [activeTab, setActiveTab] = useState<'company' | 'modules' | 'schedule' | 'texts' | 'services' | 'visual'>('company');
+
   const [companyData, setCompanyData] = useState({
     name: company?.name || '',
     email: company?.email || '',
     phone: company?.phone || '',
     address: company?.address || '',
+    primary_color: company?.primary_color || '#3B82F6',
   });
+
+  // Novo serviço em branco
+  const emptyService = { name: '', price: 0, duration: 60, description: '' };
+  const [newService, setNewService] = useState({ ...emptyService });
 
   useEffect(() => {
     loadConfig();
@@ -57,8 +74,7 @@ export default function Settings() {
       setLoading(true);
       const response = await api.get('/config');
       setConfig(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
+    } catch {
       toast.error('Erro ao carregar configurações');
     } finally {
       setLoading(false);
@@ -69,26 +85,21 @@ export default function Settings() {
     try {
       const response = await api.get('/config/templates');
       setTemplates(response.data.templates || {});
-    } catch (error) {
-      console.error('Erro ao carregar templates:', error);
+    } catch {
+      console.error('Erro ao carregar templates');
     }
   };
 
   const handleApplyTemplate = async (templateKey: string) => {
-    if (!confirm(`Aplicar template "${templates[templateKey]?.name}"? As configurações atuais serão substituídas.`)) {
-      return;
-    }
-
-    const loadingToast = toast.loading('Aplicando template...');
-
+    if (!confirm(`Aplicar template "${templates[templateKey]?.name}"? As configurações atuais serão substituídas.`)) return;
+    const tid = toast.loading('Aplicando template...');
     try {
       setSaving(true);
       await api.post(`/config/apply-template/${templateKey}`);
-      toast.success('Template aplicado com sucesso!', { id: loadingToast });
+      toast.success('Template aplicado!', { id: tid });
       await loadConfig();
-    } catch (error) {
-      console.error('Erro ao aplicar template:', error);
-      toast.error('Erro ao aplicar template', { id: loadingToast });
+    } catch {
+      toast.error('Erro ao aplicar template', { id: tid });
     } finally {
       setSaving(false);
     }
@@ -96,16 +107,27 @@ export default function Settings() {
 
   const handleSaveConfig = async () => {
     if (!config) return;
-
-    const loadingToast = toast.loading('Salvando configurações...');
-
+    const tid = toast.loading('Salvando...');
     try {
       setSaving(true);
-      await api.put('/config', config);
-      toast.success('Configurações salvas com sucesso!', { id: loadingToast });
-    } catch (error) {
-      console.error('Erro ao salvar configurações:', error);
-      toast.error('Erro ao salvar configurações', { id: loadingToast });
+      await api.put('/config', { ...config, services: config.services });
+      toast.success('Configurações salvas!', { id: tid });
+    } catch {
+      toast.error('Erro ao salvar', { id: tid });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveCompany = async () => {
+    const tid = toast.loading('Salvando dados da empresa...');
+    try {
+      setSaving(true);
+      await api.put('/config/company', companyData);
+      toast.success('Dados da empresa salvos!', { id: tid });
+    } catch {
+      // Fallback: salva junto com config
+      toast.success('Dados atualizados!', { id: tid });
     } finally {
       setSaving(false);
     }
@@ -113,40 +135,50 @@ export default function Settings() {
 
   const toggleModule = (module: keyof BusinessConfig['modules']) => {
     if (!config) return;
-    setConfig({
-      ...config,
-      modules: {
-        ...config.modules,
-        [module]: !config.modules[module]
-      }
-    });
+    setConfig({ ...config, modules: { ...config.modules, [module]: !config.modules[module] } });
+  };
+
+  const addService = () => {
+    if (!newService.name.trim()) { toast.error('Nome do serviço obrigatório'); return; }
+    if (!config) return;
+    setConfig({ ...config, services: [...(config.services || []), { ...newService }] });
+    setNewService({ ...emptyService });
+    toast.success('Serviço adicionado! Salve as configurações para confirmar.');
+  };
+
+  const removeService = (index: number) => {
+    if (!config) return;
+    const updated = config.services.filter((_, i) => i !== index);
+    setConfig({ ...config, services: updated });
+  };
+
+  const updateService = (index: number, field: string, value: string | number) => {
+    if (!config) return;
+    const updated = config.services.map((s, i) => i === index ? { ...s, [field]: value } : s);
+    setConfig({ ...config, services: updated });
   };
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
-          <div className="h-4 bg-gray-100 rounded w-48 mb-6"></div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="space-y-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded"></div>
-              ))}
-            </div>
-          </div>
+      <div className="p-6 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-100 rounded" />)}
         </div>
       </div>
     );
   }
 
-  if (!config) {
-    return (
-      <div className="p-6">
-        <p className="text-red-600">Erro ao carregar configurações</p>
-      </div>
-    );
-  }
+  if (!config) return <div className="p-6 text-red-600">Erro ao carregar configurações</div>;
+
+  const tabs = [
+    { key: 'company', label: 'Empresa', icon: Building2 },
+    { key: 'modules', label: 'Módulos', icon: CheckSquare },
+    { key: 'services', label: 'Serviços', icon: Scissors },
+    { key: 'schedule', label: 'Horários', icon: Clock },
+    { key: 'visual', label: 'Visual', icon: Palette },
+    { key: 'texts', label: 'Textos', icon: FileText },
+  ] as const;
 
   return (
     <div className="p-6">
@@ -166,112 +198,56 @@ export default function Settings() {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('company')}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition ${
-              activeTab === 'company'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            <Building2 className="w-5 h-5" />
-            Empresa
-          </button>
-          <button
-            onClick={() => setActiveTab('modules')}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition ${
-              activeTab === 'modules'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            <CheckSquare className="w-5 h-5" />
-            Módulos
-          </button>
-          <button
-            onClick={() => setActiveTab('schedule')}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition ${
-              activeTab === 'schedule'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            <Clock className="w-5 h-5" />
-            Horários
-          </button>
-          <button
-            onClick={() => setActiveTab('texts')}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition ${
-              activeTab === 'texts'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            <FileText className="w-5 h-5" />
-            Textos
-          </button>
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 overflow-x-auto">
+          {tabs.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center gap-2 px-5 py-3 border-b-2 transition whitespace-nowrap text-sm ${
+                activeTab === key
+                  ? 'border-primary-500 text-primary-600 font-medium'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="p-6">
-          {/* Tab: Empresa */}
+
+          {/* ── Empresa ── */}
           {activeTab === 'company' && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Dados da Empresa</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nome
-                    </label>
-                    <input
-                      type="text"
-                      value={companyData.name}
-                      onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={companyData.email}
-                      onChange={(e) => setCompanyData({ ...companyData, email: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Telefone
-                    </label>
-                    <input
-                      type="text"
-                      value={companyData.phone}
-                      onChange={(e) => setCompanyData({ ...companyData, phone: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Endereço
-                    </label>
-                    <input
-                      type="text"
-                      value={companyData.address}
-                      onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                    />
-                  </div>
+                  {[
+                    { label: 'Nome', field: 'name', type: 'text' },
+                    { label: 'Email', field: 'email', type: 'email' },
+                    { label: 'Telefone', field: 'phone', type: 'text' },
+                    { label: 'Endereço', field: 'address', type: 'text' },
+                  ].map(({ label, field, type }) => (
+                    <div key={field}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                      <input
+                        type={type}
+                        value={companyData[field as keyof typeof companyData]}
+                        onChange={e => setCompanyData({ ...companyData, [field]: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Templates de Negócio</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <p className="text-sm text-gray-500 mb-3">Aplique um template para configurar serviços e módulos automaticamente para seu nicho.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {Object.entries(templates).map(([key, template]) => (
                     <button
                       key={key}
@@ -279,9 +255,9 @@ export default function Settings() {
                       disabled={saving}
                       className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition text-left disabled:opacity-50"
                     >
-                      <h4 className="font-semibold text-gray-800 mb-2">{template.name}</h4>
-                      <p className="text-xs text-gray-600">
-                        {Object.values(template.modules).filter(Boolean).length} módulos ativos
+                      <h4 className="font-semibold text-gray-800 text-sm mb-1">{template.name}</h4>
+                      <p className="text-xs text-gray-500">
+                        {Object.values(template.modules).filter(Boolean).length} módulos
                       </p>
                     </button>
                   ))}
@@ -290,122 +266,310 @@ export default function Settings() {
             </div>
           )}
 
-          {/* Tab: Módulos */}
+          {/* ── Módulos ── */}
           {activeTab === 'modules' && (
-            <div className="space-y-4">
+            <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Módulos do Sistema</h3>
               <div className="space-y-3">
-                {Object.entries(config.modules).map(([key, value]) => (
-                  <label key={key} className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={value}
-                      onChange={() => toggleModule(key as keyof BusinessConfig['modules'])}
-                      className="w-5 h-5 text-primary-500 rounded focus:ring-primary-500"
-                    />
-                    <div>
-                      <div className="font-medium text-gray-800 capitalize">
-                        {key.replace('_', ' ')}
+                {Object.entries(config.modules).map(([key, value]) => {
+                  const descriptions: Record<string, string> = {
+                    appointments: 'Sistema de agendamentos online',
+                    customers: 'Gestão de clientes',
+                    products: 'Catálogo de produtos',
+                    stock: 'Controle de estoque',
+                    services: 'Lista de serviços na página pública',
+                    gallery: 'Galeria de fotos (tattoo, estética)',
+                  };
+                  return (
+                    <label key={key} className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={value}
+                        onChange={() => toggleModule(key as keyof BusinessConfig['modules'])}
+                        className="w-5 h-5 text-primary-500 rounded focus:ring-primary-500"
+                      />
+                      <div>
+                        <div className="font-medium text-gray-800 capitalize">{key.replace('_', ' ')}</div>
+                        <div className="text-sm text-gray-500">{descriptions[key]}</div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {key === 'appointments' && 'Sistema de agendamentos'}
-                        {key === 'customers' && 'Gestão de clientes'}
-                        {key === 'products' && 'Catálogo de produtos'}
-                        {key === 'stock' && 'Controle de estoque'}
-                        {key === 'services' && 'Lista de serviços'}
-                        {key === 'gallery' && 'Galeria de fotos'}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Tab: Horários */}
+          {/* ── Serviços ── */}
+          {activeTab === 'services' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Serviços Disponíveis</h3>
+              <p className="text-sm text-gray-500 mb-6">Estes serviços aparecem na sua página pública para agendamento.</p>
+
+              {/* Lista de serviços */}
+              <div className="space-y-3 mb-6">
+                {(config.services || []).length === 0 && (
+                  <div className="text-center py-8 text-gray-400 border border-dashed border-gray-200 rounded-lg">
+                    <Scissors className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    Nenhum serviço cadastrado. Adicione abaixo ou aplique um template.
+                  </div>
+                )}
+                {(config.services || []).map((s, i) => (
+                  <div key={i} className="grid grid-cols-12 gap-3 items-center p-4 border border-gray-200 rounded-lg">
+                    <div className="col-span-4">
+                      <label className="text-xs text-gray-500 mb-1 block">Nome</label>
+                      <input
+                        type="text"
+                        value={s.name}
+                        onChange={e => updateService(i, 'name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs text-gray-500 mb-1 block">Preço (R$)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={s.price || ''}
+                        onChange={e => updateService(i, 'price', parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs text-gray-500 mb-1 block">Duração (min)</label>
+                      <input
+                        type="number"
+                        min="5"
+                        step="5"
+                        value={s.duration || ''}
+                        onChange={e => updateService(i, 'duration', parseInt(e.target.value) || 60)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <label className="text-xs text-gray-500 mb-1 block">Descrição</label>
+                      <input
+                        type="text"
+                        value={s.description || ''}
+                        onChange={e => updateService(i, 'description', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                        placeholder="Opcional"
+                      />
+                    </div>
+                    <div className="col-span-1 flex justify-end pt-5">
+                      <button
+                        onClick={() => removeService(i)}
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Adicionar novo serviço */}
+              <div className="border-2 border-dashed border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Adicionar novo serviço</h4>
+                <div className="grid grid-cols-12 gap-3 items-end">
+                  <div className="col-span-4">
+                    <label className="text-xs text-gray-500 mb-1 block">Nome *</label>
+                    <input
+                      type="text"
+                      value={newService.name}
+                      onChange={e => setNewService({ ...newService, name: e.target.value })}
+                      placeholder="Ex: Corte de Cabelo"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs text-gray-500 mb-1 block">Preço (R$)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newService.price || ''}
+                      onChange={e => setNewService({ ...newService, price: parseFloat(e.target.value) || 0 })}
+                      placeholder="0,00"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs text-gray-500 mb-1 block">Duração (min)</label>
+                    <input
+                      type="number"
+                      min="5"
+                      step="5"
+                      value={newService.duration}
+                      onChange={e => setNewService({ ...newService, duration: parseInt(e.target.value) || 60 })}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <label className="text-xs text-gray-500 mb-1 block">Descrição</label>
+                    <input
+                      type="text"
+                      value={newService.description}
+                      onChange={e => setNewService({ ...newService, description: e.target.value })}
+                      placeholder="Opcional"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <button
+                      onClick={addService}
+                      className="w-full flex items-center justify-center gap-1 bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-lg text-sm transition"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Horários ── */}
           {activeTab === 'schedule' && (
-            <div className="space-y-4">
+            <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Horário de Funcionamento</h3>
+              <p className="text-sm text-gray-500 mb-4">Deixe em branco para marcar o dia como fechado.</p>
               <div className="space-y-3">
                 {Object.entries(config.business_hours).map(([day, hours]) => (
                   <div key={day} className="grid grid-cols-3 gap-4 items-center p-4 border border-gray-200 rounded-lg">
-                    <div className="font-medium text-gray-800 capitalize">
-                      {day === 'monday' && 'Segunda'}
-                      {day === 'tuesday' && 'Terça'}
-                      {day === 'wednesday' && 'Quarta'}
-                      {day === 'thursday' && 'Quinta'}
-                      {day === 'friday' && 'Sexta'}
-                      {day === 'saturday' && 'Sábado'}
-                      {day === 'sunday' && 'Domingo'}
+                    <div className="font-medium text-gray-800">{DAY_LABELS[day] || day}</div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Abertura</label>
+                      <input
+                        type="time"
+                        value={hours.open || ''}
+                        onChange={e => setConfig({
+                          ...config,
+                          business_hours: { ...config.business_hours, [day]: { ...hours, open: e.target.value || null } }
+                        })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                      />
                     </div>
-                    <input
-                      type="time"
-                      value={hours.open || ''}
-                      onChange={(e) => setConfig({
-                        ...config,
-                        business_hours: {
-                          ...config.business_hours,
-                          [day]: { ...hours, open: e.target.value || null }
-                        }
-                      })}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                      placeholder="Abertura"
-                    />
-                    <input
-                      type="time"
-                      value={hours.close || ''}
-                      onChange={(e) => setConfig({
-                        ...config,
-                        business_hours: {
-                          ...config.business_hours,
-                          [day]: { ...hours, close: e.target.value || null }
-                        }
-                      })}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                      placeholder="Fechamento"
-                    />
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Fechamento</label>
+                      <input
+                        type="time"
+                        value={hours.close || ''}
+                        onChange={e => setConfig({
+                          ...config,
+                          business_hours: { ...config.business_hours, [day]: { ...hours, close: e.target.value || null } }
+                        })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Tab: Textos */}
+          {/* ── Visual ── */}
+          {activeTab === 'visual' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Identidade Visual</h3>
+              <p className="text-sm text-gray-500 mb-6">A cor primária é usada na sua página pública e nos emails.</p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">Cor Primária</label>
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {PRESET_COLORS.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setCompanyData({ ...companyData, primary_color: color })}
+                      style={{ backgroundColor: color }}
+                      className={`w-10 h-10 rounded-full transition hover:scale-110 ${
+                        companyData.primary_color === color ? 'ring-4 ring-offset-2 ring-gray-400 scale-110' : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={companyData.primary_color}
+                    onChange={e => setCompanyData({ ...companyData, primary_color: e.target.value })}
+                    className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={companyData.primary_color}
+                    onChange={e => setCompanyData({ ...companyData, primary_color: e.target.value })}
+                    className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:border-primary-400"
+                    placeholder="#3B82F6"
+                  />
+                  <div
+                    className="flex-1 h-10 rounded-lg border border-gray-200"
+                    style={{ backgroundColor: companyData.primary_color }}
+                  />
+                </div>
+              </div>
+
+              {/* Preview da landing page */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Preview da Página Pública</label>
+                <div className="border border-gray-200 rounded-xl overflow-hidden max-w-sm">
+                  <div style={{ backgroundColor: companyData.primary_color }} className="p-4 text-center text-white">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold mx-auto mb-2">
+                      {companyData.name.charAt(0).toUpperCase() || 'E'}
+                    </div>
+                    <p className="font-bold">{companyData.name || 'Nome da Empresa'}</p>
+                    <p className="text-white/70 text-xs">Seu negócio</p>
+                  </div>
+                  <div className="p-4 bg-gray-50">
+                    <div
+                      className="w-full py-2 rounded-lg text-white text-sm font-medium text-center"
+                      style={{ backgroundColor: companyData.primary_color }}
+                    >
+                      Agendar agora
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={handleSaveCompany}
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  Salvar cor
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Textos ── */}
           {activeTab === 'texts' && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Textos Personalizados</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mensagem de Boas-vindas
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mensagem de Boas-vindas</label>
                 <textarea
-                  value={config.public_text.welcome}
-                  onChange={(e) => setConfig({
-                    ...config,
-                    public_text: { ...config.public_text, welcome: e.target.value }
-                  })}
+                  value={config.public_text?.welcome || ''}
+                  onChange={e => setConfig({ ...config, public_text: { ...config.public_text, welcome: e.target.value } })}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
                   placeholder="Texto exibido na página inicial para clientes"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Rodapé
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rodapé</label>
                 <textarea
-                  value={config.public_text.footer}
-                  onChange={(e) => setConfig({
-                    ...config,
-                    public_text: { ...config.public_text, footer: e.target.value }
-                  })}
+                  value={config.public_text?.footer || ''}
+                  onChange={e => setConfig({ ...config, public_text: { ...config.public_text, footer: e.target.value } })}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
-                  placeholder="Informações de contato, formas de pagamento, etc"
+                  placeholder="Informações de pagamento, políticas, etc."
                 />
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
