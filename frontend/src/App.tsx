@@ -5,20 +5,26 @@ import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Appointments from './pages/Appointments';
+import Payables from './pages/Financial/Payables';
+import Receivables from './pages/Financial/Receivables';
+import Invoices from './pages/Financial/Invoices';
+import PublicPage from './pages/PublicPage';
 import Settings from './pages/Settings';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import FinancialDashboard from './pages/Financial/Dashboard';
+import FinancialTransactions from './pages/Financial/Transactions';
 
 function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-right" richColors />
       <Routes>
-        {/* Rota pública */}
+        {/* Rotas públicas - SEM login, SEM sidebar */}
         <Route path="/login" element={<Login />} />
+        <Route path="/p/:slug" element={<PublicPage />} />
 
-        {/* Rotas protegidas */}
+        {/* Rotas protegidas - COM login e sidebar */}
         <Route
           path="/"
           element={
@@ -34,9 +40,13 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="settings" element={<Settings />} />
           <Route path="financial" element={<FinancialDashboard />} />
+          <Route path="financial/transactions" element={<FinancialTransactions />} />
+          <Route path="financial/payables" element={<Payables />} />
+          <Route path="financial/receivables" element={<Receivables />} />
+          <Route path="financial/invoices" element={<Invoices />} />
         </Route>
 
-        {/* Rota 404 */}
+        {/* 404 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
