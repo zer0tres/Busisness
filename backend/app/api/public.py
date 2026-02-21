@@ -1,3 +1,4 @@
+from app.services.email import send_booking_confirmation, send_booking_notification
 from flask import jsonify, request
 from app.api import api_bp
 from app.models.company import Company
@@ -200,6 +201,34 @@ def book_appointment(slug):
     )
     db.session.add(appointment)
     db.session.commit()
+
+    # Enviar emails
+    date_formatted = appt_date.strftime('%d/%m/%Y')
+    time_formatted = appt_time.strftime('%H:%M')
+
+    # Email para o cliente
+    send_booking_confirmation(
+        customer_email=customer.email,
+        customer_name=customer.name,
+        service_name=data['service_name'],
+        date=date_formatted,
+        time=time_formatted,
+        company_name=company.name,
+        company_phone=company.phone,
+    )
+
+    # Email para o dono (usar email da empresa)
+    if company.email:
+        send_booking_notification(
+            owner_email=company.email,
+            company_name=company.name,
+            customer_name=customer.name,
+            customer_email=customer.email,
+            customer_phone=data['phone'],
+            service_name=data['service_name'],
+            date=date_formatted,
+            time=time_formatted,
+        )
 
     return jsonify({
         'message': 'Agendamento realizado com sucesso!',
