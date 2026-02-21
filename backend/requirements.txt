@@ -18,3 +18,4 @@ email-validator==2.1.0
 
 # Utils
 python-dateutil==2.8.2resend==2.22.0
+mercadopago==2.3.0
