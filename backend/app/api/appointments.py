@@ -330,3 +330,43 @@ def delete_appointment(appointment_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Erro ao deletar agendamento: {str(e)}'}), 500
+    
+@api_bp.route('/notifications', methods=['GET'])
+@jwt_required()
+def get_notifications():
+    """Retorna notificações: agendamentos pendentes de hoje e futuros"""
+    company_id = get_user_company_id()
+    if not company_id:
+        return jsonify({'error': 'Sem empresa'}), 403
+
+    from datetime import date
+    today = date.today()
+
+    pending = Appointment.query.filter_by(
+        company_id=company_id,
+        status='pending'
+    ).filter(
+        Appointment.appointment_date >= today
+    ).order_by(
+        Appointment.appointment_date,
+        Appointment.appointment_time
+    ).limit(10).all()
+
+    notifications = []
+    for a in pending:
+        customer_name = a.customer.name if a.customer else 'Cliente'
+        is_today = a.appointment_date == today
+        notifications.append({
+            'id': a.id,
+            'type': 'pending_appointment',
+            'title': 'Agendamento pendente',
+            'message': f'{customer_name} — {a.service_name}',
+            'date': a.appointment_date.isoformat(),
+            'time': a.appointment_time.strftime('%H:%M'),
+            'is_today': is_today,
+        })
+
+    return jsonify({
+        'notifications': notifications,
+        'count': len(notifications)
+    }), 200

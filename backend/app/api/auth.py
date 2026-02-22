@@ -148,3 +148,38 @@ def refresh():
     return jsonify({
         'access_token': access_token
     }), 200
+
+@api_bp.route('/auth/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    from app.models.user import User
+    user_id = get_jwt_identity()
+    user = User.query.get(int(user_id))
+    if not user:
+        return jsonify({'error': 'Usuário não encontrado'}), 404
+    data = request.get_json()
+    if 'name' in data:
+        user.name = data['name']
+    if 'email' in data:
+        existing = User.query.filter_by(email=data['email']).first()
+        if existing and existing.id != user.id:
+            return jsonify({'error': 'Email já em uso'}), 400
+        user.email = data['email']
+    db.session.commit()
+    return jsonify({'message': 'Perfil atualizado', 'user': user.to_dict()}), 200
+
+
+@api_bp.route('/auth/change-password', methods=['PUT'])
+@jwt_required()
+def change_password():
+    from app.models.user import User
+    user_id = get_jwt_identity()
+    user = User.query.get(int(user_id))
+    if not user:
+        return jsonify({'error': 'Usuário não encontrado'}), 404
+    data = request.get_json()
+    if not user.check_password(data.get('current_password', '')):
+        return jsonify({'error': 'Senha atual incorreta'}), 400
+    user.set_password(data['new_password'])
+    db.session.commit()
+    return jsonify({'message': 'Senha alterada com sucesso'}), 200

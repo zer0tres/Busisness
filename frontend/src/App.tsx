@@ -11,6 +11,8 @@ import Invoices from './pages/Financial/Invoices';
 import PublicPage from './pages/PublicPage';
 import Settings from './pages/Settings';
 import MainLayout from './layouts/MainLayout';
+import Subscription from './pages/Subscription';
+import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import FinancialDashboard from './pages/Financial/Dashboard';
 import FinancialTransactions from './pages/Financial/Transactions';
@@ -42,6 +44,8 @@ function App() {
           <Route path="financial" element={<FinancialDashboard />} />
           <Route path="financial/transactions" element={<FinancialTransactions />} />
           <Route path="financial/payables" element={<Payables />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="subscription" element={<Subscription />} />
           <Route path="financial/receivables" element={<Receivables />} />
           <Route path="financial/invoices" element={<Invoices />} />
         </Route>
