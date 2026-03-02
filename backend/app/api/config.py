@@ -210,3 +210,29 @@ def _update_config_from_template(config, template):
     config.customer_fields = template['customer_fields']
     config.public_welcome_text = template['public_welcome_text']
     config.public_footer_text = template['public_footer_text']
+
+    
+@api_bp.route('/config/company', methods=['PUT'])
+@jwt_required()
+def update_company():
+    """Atualizar dados da empresa (nome, email, telefone, endereço, cor)"""
+    company_id = get_user_company_id()
+    if not company_id:
+        return jsonify({'error': 'Usuário sem empresa associada'}), 403
+
+    data = request.get_json()
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({'error': 'Empresa não encontrada'}), 404
+
+    try:
+        if 'name' in data: company.name = data['name']
+        if 'email' in data: company.email = data['email']
+        if 'phone' in data: company.phone = data['phone']
+        if 'address' in data: company.address = data['address']
+        if 'primary_color' in data: company.primary_color = data['primary_color']
+        db.session.commit()
+        return jsonify({'message': 'Empresa atualizada com sucesso'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

@@ -16,6 +16,8 @@ interface CompanyData {
   primary_color: string;
   logo_url?: string;
   opening_hours?: Record<string, { open: string; close: string }>;
+  welcome_text?: string;
+  footer_text?: string;
 }
 
 interface Service {
@@ -218,6 +220,9 @@ export default function PublicPage() {
               </span>
             )}
           </div>
+          {company.welcome_text && (
+            <p className="text-white/90 text-sm mt-4 w-full text-center px-4">{company.welcome_text}</p>
+          )}
         </div>
       </div>
 
@@ -531,6 +536,9 @@ export default function PublicPage() {
       </div>
 
       {/* Footer */}
+      {company?.footer_text && (
+        <div className="text-center py-4 px-6 text-gray-500 text-sm border-t border-gray-200 max-w-2xl mx-auto">{company.footer_text}</div>
+      )}
       <div className="text-center py-6 text-gray-400 text-xs">
         Powered by <span className="font-semibold">Business Suite</span>
       </div>

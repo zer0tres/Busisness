@@ -44,6 +44,8 @@ def get_public_company(slug):
             'primary_color': company.primary_color,
             'logo_url': company.logo_url,
             'opening_hours': company.opening_hours,
+            'welcome_text': config.public_welcome_text if config else '',
+            'footer_text': config.public_footer_text if config else '',
         },
         'services': services,
         'products': [

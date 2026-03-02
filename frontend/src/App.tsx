@@ -25,6 +25,7 @@ function App() {
         {/* Rotas públicas - SEM login, SEM sidebar */}
         <Route path="/login" element={<Login />} />
         <Route path="/p/:slug" element={<PublicPage />} />
+        <Route path="/book/:slug" element={<PublicPage />} />
 
         {/* Rotas protegidas - COM login e sidebar */}
         <Route
