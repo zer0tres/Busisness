@@ -23,6 +23,9 @@ class Company(db.Model):
     primary_color = db.Column(db.String(7), default='#3B82F6')  # Azul padrão
     logo_url = db.Column(db.String(255))
     
+    # Google OAuth / Calendar
+    google_refresh_token = db.Column(db.Text, nullable=True)
+    
     # Configurações de funcionamento
     opening_hours = db.Column(db.JSON)  # {"monday": {"open": "09:00", "close": "18:00"}, ...}
     

@@ -53,6 +53,9 @@ def create_app(config_name='default'):
     # Registrar blueprints
     from app.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
+
+    from app.api.google_auth import google_auth_bp
+    app.register_blueprint(google_auth_bp, url_prefix='/api')
     
     # Rota de health check
     @app.route('/health')

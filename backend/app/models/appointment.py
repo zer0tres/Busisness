@@ -28,6 +28,9 @@ class Appointment(db.Model):
     status = db.Column(db.String(20), default='pending', nullable=False)
     # Opções: 'pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'
     
+    # Google Calendar
+    google_event_id = db.Column(db.String(255), nullable=True)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

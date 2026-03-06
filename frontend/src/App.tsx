@@ -14,6 +14,7 @@ import MainLayout from './layouts/MainLayout';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
 import FinancialDashboard from './pages/Financial/Dashboard';
 import FinancialTransactions from './pages/Financial/Transactions';
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/p/:slug" element={<PublicPage />} />
         <Route path="/book/:slug" element={<PublicPage />} />
+        <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
 
         {/* Rotas protegidas - COM login e sidebar */}
         <Route

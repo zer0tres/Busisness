@@ -7,6 +7,8 @@ from app.models.appointment import Appointment
 from app.models.customer import Customer
 from app.models.user import User
 from app.schemas.appointment import AppointmentSchema
+from app.models.company import Company
+from app.utils.google_calendar import create_calendar_event, update_calendar_event, delete_calendar_event
 
 def get_user_company_id():
     """Obter company_id do usuário logado"""
@@ -220,7 +222,21 @@ def create_appointment():
         
         db.session.add(appointment)
         db.session.commit()
-        
+
+        # Sincronizar com Google Calendar (se empresa conectada)
+        try:
+            company = Company.query.get(company_id)
+            if company and company.google_refresh_token:
+                event_id = create_calendar_event(
+                    appointment, company,
+                    customer.name, customer.email
+                )
+                if event_id:
+                    appointment.google_event_id = event_id
+                    db.session.commit()
+        except Exception as cal_err:
+            print(f"[Calendar] Erro não crítico: {cal_err}")
+
         return jsonify({
             'message': 'Agendamento criado com sucesso',
             'appointment': appointment.to_dict(include_customer=True)
@@ -295,7 +311,17 @@ def update_appointment(appointment_id):
             appointment.status = data['status']
         
         db.session.commit()
-        
+
+        # Sincronizar com Google Calendar
+        try:
+            company = Company.query.get(company_id)
+            if company and company.google_refresh_token:
+                customer = Customer.query.get(appointment.customer_id)
+                customer_name = customer.name if customer else 'Cliente'
+                update_calendar_event(appointment, company, customer_name)
+        except Exception as cal_err:
+            print(f"[Calendar] Erro não crítico: {cal_err}")
+
         return jsonify({
             'message': 'Agendamento atualizado com sucesso',
             'appointment': appointment.to_dict(include_customer=True)
@@ -322,6 +348,14 @@ def delete_appointment(appointment_id):
         return jsonify({'error': 'Agendamento não encontrado'}), 404
     
     try:
+        # Remover do Google Calendar antes de deletar
+        try:
+            company = Company.query.get(company_id)
+            if company and appointment.google_event_id:
+                delete_calendar_event(appointment.google_event_id, company)
+        except Exception as cal_err:
+            print(f"[Calendar] Erro não crítico: {cal_err}")
+
         db.session.delete(appointment)
         db.session.commit()
         
