@@ -43,7 +43,7 @@ def get_public_company(slug):
             'address': company.address,
             'primary_color': company.primary_color,
             'logo_url': company.logo_url,
-            'opening_hours': company.opening_hours,
+            'opening_hours': (bconfig.business_hours if bconfig and bconfig.business_hours else company.opening_hours) or {},
             'welcome_text': config.public_welcome_text if config else '',
             'footer_text': config.public_footer_text if config else '',
         },
@@ -89,14 +89,16 @@ def get_availability(slug):
     # Verificar horário de funcionamento
     day_names = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     day_name = day_names[target_date.weekday()]
-    opening_hours = company.opening_hours or {}
+    # Buscar horários da BusinessConfig (onde são realmente salvos)
+    from app.models.business_config import BusinessConfig
+    bconfig = BusinessConfig.query.filter_by(company_id=company.id).first()
+    opening_hours = (bconfig.business_hours if bconfig and bconfig.business_hours else company.opening_hours) or {}
     day_config = opening_hours.get(day_name, {})
 
-    if not day_config or not day_config.get('open'):
+    open_time_str = (day_config or {}).get('open', '')
+    close_time_str = (day_config or {}).get('close', '')
+    if not open_time_str or not close_time_str or open_time_str == close_time_str:
         return jsonify({'slots': [], 'message': 'Estabelecimento fechado neste dia'}), 200
-
-    open_time_str = day_config.get('open', '09:00')
-    close_time_str = day_config.get('close', '18:00')
 
     open_h, open_m = map(int, open_time_str.split(':'))
     close_h, close_m = map(int, close_time_str.split(':'))
