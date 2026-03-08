@@ -70,7 +70,7 @@ export default function PublicPage() {
   const [notFound, setNotFound] = useState(false);
 
   // Booking state
-  const [step, setStep] = useState<'home' | 'service' | 'date' | 'time' | 'form' | 'success'>('home');
+  const [step, setStep] = useState<'home' | 'customer' | 'service' | 'date' | 'time' | 'confirm' | 'success'>('home');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -238,7 +238,7 @@ export default function PublicPage() {
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Agende seu horário</h2>
                 <p className="text-gray-500 text-sm mb-4">Escolha um serviço e marque online em poucos segundos</p>
                 <button
-                  onClick={() => setStep('service')}
+                  onClick={() => setStep('customer')}
                   style={{ backgroundColor: primaryColor }}
                   className="w-full text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
                 >
@@ -320,10 +320,55 @@ export default function PublicPage() {
           </div>
         )}
 
+
+        {/* ── STEP: DADOS DO CLIENTE ── */}
+        {step === 'customer' && (
+          <div>
+            <button onClick={() => setStep('home')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
+              <ChevronLeft className="w-4 h-4" /> Voltar
+            </button>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Seus dados</h2>
+            <p className="text-gray-500 text-sm mb-6">Preencha seus dados para continuar com o agendamento</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-600 text-sm font-medium block mb-1">Nome completo *</label>
+                <input type="text" placeholder="Seu nome" value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
+              </div>
+              <div>
+                <label className="text-gray-600 text-sm font-medium block mb-1">E-mail *</label>
+                <input type="email" placeholder="seu@email.com" value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
+              </div>
+              <div>
+                <label className="text-gray-600 text-sm font-medium block mb-1">Telefone / WhatsApp *</label>
+                <input type="tel" placeholder="(00) 00000-0000" value={form.phone}
+                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
+              </div>
+              <button
+                onClick={() => {
+                  if (!form.name || !form.email || !form.phone) {
+                    alert('Preencha todos os campos obrigatórios');
+                    return;
+                  }
+                  setStep('service');
+                }}
+                style={{ backgroundColor: primaryColor }}
+                className="w-full text-white py-4 rounded-xl font-bold text-base hover:opacity-90 transition"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── STEP: SERVIÇO ── */}
         {step === 'service' && (
           <div>
-            <button onClick={() => setStep('home')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
+            <button onClick={() => setStep('customer')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
               <ChevronLeft className="w-4 h-4" /> Voltar
             </button>
             <h2 className="text-xl font-bold text-gray-800 mb-4">Escolha o serviço</h2>
@@ -355,7 +400,7 @@ export default function PublicPage() {
         {/* ── STEP: DATA ── */}
         {step === 'date' && (
           <div>
-            <button onClick={() => setStep('service')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
+            <button onClick={() => setStep('customer')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
               <ChevronLeft className="w-4 h-4" /> Voltar
             </button>
             <h2 className="text-xl font-bold text-gray-800 mb-1">Escolha a data</h2>
@@ -417,7 +462,7 @@ export default function PublicPage() {
                 {availableSlots.map(slot => (
                   <button
                     key={slot}
-                    onClick={() => { setSelectedTime(slot); setStep('form'); }}
+                    onClick={() => { setSelectedTime(slot); setStep('confirm'); }}
                     style={selectedTime === slot ? { backgroundColor: primaryColor } : {}}
                     className={`py-3 rounded-xl font-semibold text-sm transition border ${
                       selectedTime === slot ? 'text-white border-transparent' : 'bg-white border-gray-100 text-gray-800 hover:border-gray-300'
@@ -432,12 +477,12 @@ export default function PublicPage() {
         )}
 
         {/* ── STEP: FORMULÁRIO ── */}
-        {step === 'form' && (
+        {step === 'confirm' && (
           <div>
             <button onClick={() => setStep('time')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm transition">
               <ChevronLeft className="w-4 h-4" /> Voltar
             </button>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Seus dados</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Confirmar agendamento</h2>
 
             {/* Resumo */}
             <div className="bg-gray-100 rounded-xl p-4 mb-6 text-sm">
@@ -453,24 +498,6 @@ export default function PublicPage() {
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-gray-600 text-sm font-medium block mb-1">Nome completo *</label>
-                <input type="text" placeholder="Seu nome" value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
-              </div>
-              <div>
-                <label className="text-gray-600 text-sm font-medium block mb-1">E-mail *</label>
-                <input type="email" placeholder="seu@email.com" value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
-              </div>
-              <div>
-                <label className="text-gray-600 text-sm font-medium block mb-1">Telefone / WhatsApp *</label>
-                <input type="tel" placeholder="(00) 00000-0000" value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:border-gray-400" />
-              </div>
               <div>
                 <label className="text-gray-600 text-sm font-medium block mb-1">Observações</label>
                 <textarea placeholder="Alguma observação? (opcional)" value={form.notes}
