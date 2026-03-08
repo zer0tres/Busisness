@@ -93,13 +93,13 @@ def create_checkout():
             'name': user.name,
         },
         'back_urls': {
-            'success': 'https://fuzzy-invention-x7v5975x9v7fvwj5-5000.app.github.dev/dashboard?payment=success',
-            'failure': 'https://fuzzy-invention-x7v5975x9v7fvwj5-5000.app.github.dev/dashboard?payment=failure',
-            'pending': 'https://fuzzy-invention-x7v5975x9v7fvwj5-5000.app.github.dev/dashboard?payment=pending',
+            'success': 'https://business-production-bbb0.up.railway.app/dashboard?payment=success',
+            'failure': 'https://business-production-bbb0.up.railway.app/dashboard?payment=failure',
+            'pending': 'https://business-production-bbb0.up.railway.app/dashboard?payment=pending',
         },
         'auto_return': 'approved',
         'external_reference': f'{company.id}:{plan_key}',
-        'notification_url': 'https://fuzzy-invention-x7v5975x9v7fvwj5-5000.app.github.dev/api/payments/webhook',
+        'notification_url': 'https://business-production-bbb0.up.railway.app/api/payments/webhook',
         'statement_descriptor': 'BUSINESS SUITE',
     }
 

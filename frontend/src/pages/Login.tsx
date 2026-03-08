@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -128,6 +128,8 @@ export default function Login() {
             )}
           </button>
         </form>
+
+        <p className="text-center text-gray-500 text-sm mt-4">Nao tem conta? <Link to="/register" className="text-blue-600 font-medium hover:underline">Cadastre-se gratuitamente</Link></p>
 
         {/* Credenciais de teste */}
         <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">

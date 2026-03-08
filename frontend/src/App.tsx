@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         {/* Rotas públicas - SEM login, SEM sidebar */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/p/:slug" element={<PublicPage />} />
         <Route path="/book/:slug" element={<PublicPage />} />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
