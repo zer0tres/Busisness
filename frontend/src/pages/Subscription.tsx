@@ -73,7 +73,7 @@ export default function Subscription() {
     try {
       const res = await api.post('/payments/create-checkout', { plan: planKey });
       // Em sandbox, usar sandbox_url; em produção usar checkout_url
-      const url = res.data.sandbox_url || res.data.checkout_url;
+      const url = res.data.checkout_url;
       window.open(url, '_blank');
     } catch {
       toast.error('Erro ao criar link de pagamento');
