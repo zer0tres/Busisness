@@ -24,10 +24,10 @@ export default function Subscription() {
       toast.success('Pagamento confirmado! Sua assinatura foi ativada.');
       window.history.replaceState({}, '', window.location.pathname);
     } else if (payment === 'failure') {
-      toast.error('Pagamento nao aprovado. Tente novamente.');
+      toast.error('Pagamento não aprovado. Tente novamente.');
       window.history.replaceState({}, '', window.location.pathname);
     } else if (payment === 'pending') {
-      toast.info('Pagamento pendente. Voce sera notificado quando confirmado.');
+      toast.info('Pagamento pendente. Você será notificado quando confirmado.');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -90,7 +90,7 @@ export default function Subscription() {
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
           <Clock className="w-5 h-5 text-amber-600 flex-shrink-0" />
           <p className="text-amber-800 text-sm">
-            Voce esta no <strong>periodo de teste gratuito</strong>. Restam <strong>{trialDays} dias</strong> para assinar e continuar usando.
+            Você está no <strong>período de teste gratuito</strong>. Restam <strong>{trialDays} dias</strong> para assinar e continuar usando.
           </p>
         </div>
       )}
@@ -99,7 +99,7 @@ export default function Subscription() {
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <p className="text-red-800 text-sm">
-            Seu periodo de teste <strong>encerrou</strong>. Assine para voltar a usar o sistema.
+            Seu período de teste <strong>encerrou</strong>. Assine para voltar a usar o sistema.
           </p>
         </div>
       )}
@@ -145,9 +145,9 @@ export default function Subscription() {
               'Agendamentos ilimitados',
               'Controle financeiro',
               'Estoque e produtos',
-              'Pagina publica de agendamento',
-              'Notificacoes por email',
-              'Suporte prioritario',
+              'Página pública de agendamento',
+              'Notificações por email',
+              'Suporte prioritário',
             ].map((f, i) => (
               <li key={i} className="flex items-center gap-3 text-sm text-gray-700">
                 <div className="w-5 h-5 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
