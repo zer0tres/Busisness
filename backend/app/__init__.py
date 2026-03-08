@@ -98,7 +98,7 @@ def register_frontend(app):
     import os
     from flask import send_from_directory, send_file
     
-    frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'frontend', 'dist')
+    frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend_dist')
     frontend_dist = os.path.abspath(frontend_dist)
     
     @app.route('/', defaults={'path': ''})
