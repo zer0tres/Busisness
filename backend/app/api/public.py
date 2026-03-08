@@ -43,7 +43,7 @@ def get_public_company(slug):
             'address': company.address,
             'primary_color': company.primary_color,
             'logo_url': company.logo_url,
-            'opening_hours': (bconfig.business_hours if bconfig and bconfig.business_hours else company.opening_hours) or {},
+            'opening_hours': (config.business_hours if config and config.business_hours else company.opening_hours) or {},
             'welcome_text': config.public_welcome_text if config else '',
             'footer_text': config.public_footer_text if config else '',
         },
