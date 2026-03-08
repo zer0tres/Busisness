@@ -93,13 +93,13 @@ def create_checkout():
             'name': user.name,
         },
         'back_urls': {
-            'success': 'https://business-production-bbb0.up.railway.app/dashboard?payment=success',
-            'failure': 'https://business-production-bbb0.up.railway.app/dashboard?payment=failure',
-            'pending': 'https://business-production-bbb0.up.railway.app/dashboard?payment=pending',
+            'success': 'https://sahjo.com.br/dashboard?payment=success',
+            'failure': 'https://sahjo.com.br/dashboard?payment=failure',
+            'pending': 'https://sahjo.com.br/dashboard?payment=pending',
         },
         'auto_return': 'approved',
         'external_reference': f'{company.id}:{plan_key}',
-        'notification_url': 'https://business-production-bbb0.up.railway.app/api/payments/webhook',
+        'notification_url': 'https://sahjo.com.br/api/payments/webhook',
         'statement_descriptor': 'BUSINESS SUITE',
     }
 
