@@ -183,3 +183,13 @@ def change_password():
     user.set_password(data['new_password'])
     db.session.commit()
     return jsonify({'message': 'Senha alterada com sucesso'}), 200
+
+@api_bp.route('/init-db', methods=['POST'])
+def init_db():
+    """Inicializar banco de dados - remover após uso"""
+    try:
+        from app import db
+        db.create_all()
+        return jsonify({'message': 'Tabelas criadas com sucesso!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
