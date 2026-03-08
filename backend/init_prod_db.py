@@ -13,11 +13,11 @@ with app.app_context():
     from app.models.user import User
     
     if not Company.query.first():
-        company = Company(name='Empresa Demo', slug='empresa-demo', business_type='outros', email='admin@busisness.com')
+        company = Company(name='Empresa Demo', slug='empresa-demo', business_type='outros', email='admin@business.com')
         db.session.add(company)
         db.session.flush()
         
-        user = User(name='Admin', email='admin@busisness.com', company_id=company.id, is_admin=True)
+        user = User(name='Admin', email='admin@business.com', company_id=company.id, is_admin=True)
         user.set_password('admin123')
         db.session.add(user)
         db.session.commit()

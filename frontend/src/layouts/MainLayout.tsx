@@ -118,7 +118,7 @@ export default function MainLayout() {
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200 flex-shrink-0">
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-primary-600">Busisness</h1>
+          <h1 className="text-xl font-bold text-primary-600">Sahjo</h1>
           <p className="text-sm text-gray-600 mt-1 truncate">{company?.name}</p>
         </div>
         <SidebarNav />
@@ -130,7 +130,7 @@ export default function MainLayout() {
           <aside className="w-64 h-full bg-white flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-primary-600">Busisness</h1>
+                <h1 className="text-xl font-bold text-primary-600">Sahjo</h1>
                 <p className="text-sm text-gray-600 mt-1 truncate">{company?.name}</p>
               </div>
               <button onClick={() => setSidebarOpen(false)}>

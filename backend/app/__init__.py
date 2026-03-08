@@ -60,7 +60,7 @@ def create_app(config_name='default'):
     # Rota de health check
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'message': 'Busisness API is running'}, 200
+        return {'status': 'ok', 'message': 'Business API is running'}, 200
     
     # ✅ ADICIONAR HEADERS CORS EM TODAS AS RESPOSTAS
     @app.after_request
