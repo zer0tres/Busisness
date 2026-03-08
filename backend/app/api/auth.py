@@ -184,7 +184,7 @@ def change_password():
     db.session.commit()
     return jsonify({'message': 'Senha alterada com sucesso'}), 200
 
-@api_bp.route('/init-db', methods=['POST'])
+@api_bp.route('/init-db', methods=['GET', 'POST'])
 def init_db():
     """Inicializar banco de dados - remover após uso"""
     try:
