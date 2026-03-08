@@ -93,3 +93,20 @@ def create_app(config_name='default'):
         return jsonify({'error': 'Token expirado'}), 401
     
     return app
+# Importar ao final para evitar circular imports
+def register_frontend(app):
+    import os
+    from flask import send_from_directory, send_file
+    
+    frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'frontend', 'dist')
+    frontend_dist = os.path.abspath(frontend_dist)
+    
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        if path.startswith('api/'):
+            return jsonify({'error': 'Recurso não encontrado'}), 404
+        full_path = os.path.join(frontend_dist, path)
+        if path and os.path.exists(full_path):
+            return send_from_directory(frontend_dist, path)
+        return send_file(os.path.join(frontend_dist, 'index.html'))

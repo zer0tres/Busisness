@@ -1,8 +1,8 @@
-from app import create_app, db
+from app import create_app, db, register_frontend
 
 app = create_app()
+register_frontend(app)
 
-# Criar tabelas automaticamente na inicialização
 with app.app_context():
     db.create_all()
 
