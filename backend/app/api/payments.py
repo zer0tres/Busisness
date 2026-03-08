@@ -9,7 +9,7 @@ import mercadopago
 import os
 from datetime import datetime, timedelta
 
-MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', 'APP_USR-6012970983078573-022207-74686c9e3f19dc88f2c4f26e59e491c9-3218633765')
+MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', 'APP_USR-7357147419427238-022207-f35f6ba349e3b228418c4709936d3fc9-434116104')
 
 PLANS = {
     'basic': {
