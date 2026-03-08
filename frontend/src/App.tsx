@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
 import SubscriptionGuard from './components/SubscriptionGuard';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
@@ -28,6 +30,8 @@ function App() {
         {/* Rotas públicas - SEM login, SEM sidebar */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/p/:slug" element={<PublicPage />} />
         <Route path="/book/:slug" element={<PublicPage />} />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
