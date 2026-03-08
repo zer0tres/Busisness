@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import SubscriptionGuard from './components/SubscriptionGuard';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
@@ -36,7 +37,9 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <MainLayout />
+              <SubscriptionGuard>
+                <MainLayout />
+              </SubscriptionGuard>
             </ProtectedRoute>
           }
         >

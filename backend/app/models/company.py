@@ -1,5 +1,5 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Company(db.Model):
     """Modelo de empresa/negócio"""
@@ -57,8 +57,26 @@ class Company(db.Model):
             'is_active': self.is_active,
             'subscription_status': self.subscription_status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'trial_days_remaining': self.trial_days_remaining(),
+            'can_access': self.can_access()
         }
     
+    def trial_days_remaining(self):
+        if not self.created_at:
+            return 0
+        delta = timedelta(days=30) - (datetime.utcnow() - self.created_at)
+        return max(0, delta.days)
+
+    def is_trial_expired(self):
+        return self.subscription_status == 'trial' and self.trial_days_remaining() == 0
+
+    def can_access(self):
+        if self.subscription_status == 'active':
+            return True
+        if self.subscription_status == 'trial' and self.trial_days_remaining() > 0:
+            return True
+        return False
+
     def __repr__(self):
         return f'<Company {self.name}>'

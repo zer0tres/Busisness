@@ -12,23 +12,19 @@ from datetime import datetime, timedelta
 MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', 'APP_USR-7357147419427238-022207-f35f6ba349e3b228418c4709936d3fc9-434116104')
 
 PLANS = {
-    'basic': {
-        'name': 'Básico',
-        'price': 49.90,
-        'description': 'Até 100 clientes, agendamentos ilimitados, 1 usuário',
-        'features': ['1 usuário', '100 clientes', 'Agendamentos ilimitados', 'Estoque básico'],
-    },
-    'professional': {
-        'name': 'Profissional',
-        'price': 99.90,
-        'description': 'Até 500 clientes, 3 usuários, relatórios avançados',
-        'features': ['3 usuários', '500 clientes', 'Módulo financeiro', 'Relatórios', 'Página pública'],
-    },
     'premium': {
         'name': 'Premium',
-        'price': 149.90,
-        'description': 'Usuários ilimitados, multi-estabelecimento, suporte prioritário',
-        'features': ['Usuários ilimitados', 'Clientes ilimitados', 'Tudo do Profissional', 'Suporte prioritário'],
+        'price': 49.90,
+        'description': 'Acesso completo a todas as funcionalidades',
+        'features': [
+            'Clientes ilimitados',
+            'Agendamentos ilimitados',
+            'Controle financeiro',
+            'Estoque e produtos',
+            'Pagina publica de agendamento',
+            'Notificacoes por email',
+            'Suporte prioritario',
+        ],
     },
 }
 

@@ -7,6 +7,8 @@ export interface User {
   company_id: number;
   created_at: string;
   updated_at: string;
+  trial_days_remaining: number;
+  can_access: boolean;
 }
 
 export interface Company {
@@ -23,6 +25,8 @@ export interface Company {
   subscription_status: string;
   created_at: string;
   updated_at: string;
+  trial_days_remaining: number;
+  can_access: boolean;
 }
 
 export interface LoginResponse {
@@ -44,6 +48,8 @@ export interface Customer {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  trial_days_remaining: number;
+  can_access: boolean;
 }
 
 export interface Appointment {
