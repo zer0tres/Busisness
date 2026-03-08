@@ -130,13 +130,6 @@ export default function Login() {
         </form>
 
         <p className="text-center text-gray-500 text-sm mt-4">Nao tem conta? <Link to="/register" className="text-blue-600 font-medium hover:underline">Cadastre-se gratuitamente</Link></p>
-
-        {/* Credenciais de teste */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-          <p className="font-semibold mb-1">Credenciais de teste:</p>
-          <p>Email: admin@business.com</p>
-          <p>Senha: admin123</p>
-        </div>
       </div>
     </div>
   );
