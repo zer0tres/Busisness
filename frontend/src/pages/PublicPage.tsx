@@ -15,6 +15,7 @@ interface CompanyData {
   address?: string;
   primary_color: string;
   logo_url?: string;
+  header_image_url?: string;  // ← adicionar esta linha
   opening_hours?: Record<string, { open: string; close: string }>;
   welcome_text?: string;
   footer_text?: string;
@@ -191,8 +192,13 @@ export default function PublicPage() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header */}
-      <div style={{ backgroundColor: primaryColor }} className="text-white">
-        <div className="max-w-2xl mx-auto px-4 py-8 text-center">
+      <div
+        style={company.header_image_url
+          ? { backgroundImage: `url(${company.header_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          : { backgroundColor: primaryColor }}
+        className="text-white relative">
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+        <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 text-center">
           {company.logo_url ? (
             <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-white/30" />
           ) : (

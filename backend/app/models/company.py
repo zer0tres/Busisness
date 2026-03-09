@@ -22,7 +22,8 @@ class Company(db.Model):
     # Customização
     primary_color = db.Column(db.String(7), default='#3B82F6')  # Azul padrão
     logo_url = db.Column(db.String(255))
-    
+    header_image_url = db.Column(db.Text)
+
     # Google OAuth / Calendar
     google_refresh_token = db.Column(db.Text, nullable=True)
     
@@ -53,6 +54,7 @@ class Company(db.Model):
             'address': self.address,
             'primary_color': self.primary_color,
             'logo_url': self.logo_url,
+            'header_image_url': self.header_image_url,
             'opening_hours': self.opening_hours,
             'is_active': self.is_active,
             'subscription_status': self.subscription_status,

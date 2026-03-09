@@ -41,6 +41,7 @@ export default function Settings() {
     phone: company?.phone || '',
     address: company?.address || '',
     primary_color: company?.primary_color || '#3B82F6',
+    header_image_url: (company as any)?.header_image_url || '',
   });
 
   const emptyService = { name: '', price: 0, duration: 60, description: '' };
@@ -84,14 +85,33 @@ export default function Settings() {
   };
 
   const handleSaveColor = async () => {
-    const tid = toast.loading('Salvando cor...');
-    try {
-      setSaving(true);
-      await api.put('/config/company', { primary_color: companyData.primary_color });
-      toast.success('Cor salva com sucesso!', { id: tid });
-    } catch { toast.error('Erro ao salvar cor', { id: tid }); }
-    finally { setSaving(false); }
+  const tid = toast.loading('Salvando visual...');
+  try {
+    setSaving(true);
+    await api.put('/config/company', {
+      primary_color: companyData.primary_color,
+      header_image_url: companyData.header_image_url,
+    });
+    toast.success('Visual salvo com sucesso!', { id: tid });
+  } catch { toast.error('Erro ao salvar visual', { id: tid }); }
+  finally { setSaving(false); }
+};
+
+const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    toast.error('Use apenas PNG ou JPEG'); return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error('Imagem muito grande. Máximo 2MB'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    setCompanyData({ ...companyData, header_image_url: ev.target?.result as string });
   };
+  reader.readAsDataURL(file);
+};
 
   const handleMainSave = () => {
     if (activeTab === 'company') handleSaveCompany();
@@ -346,6 +366,52 @@ export default function Settings() {
                   </div>
                 </div>
               </div>
+              <div className="mb-6">
+  <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de Fundo do Header</label>
+  <p className="text-xs text-gray-500 mb-3">Substitui a cor sólida por uma foto no cabeçalho da página pública. PNG ou JPEG, máx. 2MB.</p>
+  <div className="flex items-center gap-3">
+    <label className="cursor-pointer flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition border border-gray-300">
+      <input type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleHeaderImageUpload} />
+      📷 Selecionar foto
+    </label>
+    {companyData.header_image_url && (
+      <button onClick={() => setCompanyData({ ...companyData, header_image_url: '' })}
+        className="text-xs text-red-500 hover:text-red-700 transition">
+        ✕ Remover imagem
+      </button>
+    )}
+  </div>
+  {companyData.header_image_url && (
+    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 max-w-xs h-24 relative">
+      <img src={companyData.header_image_url} alt="Preview header" className="w-full h-full object-cover" />
+    </div>
+  )}
+</div>
+
+{/* Preview */}
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-3">Preview da Página Pública</label>
+  <div className="border border-gray-200 rounded-xl overflow-hidden max-w-xs">
+    <div
+      style={companyData.header_image_url
+        ? { backgroundImage: `url(${companyData.header_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+        : { backgroundColor: companyData.primary_color }}
+      className="p-4 text-center text-white relative">
+      <div className="absolute inset-0 bg-black/20 rounded-t-xl" />
+      <div className="relative z-10">
+        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold mx-auto mb-2">
+          {companyData.name.charAt(0).toUpperCase() || 'E'}
+        </div>
+        <p className="font-bold">{companyData.name || 'Nome da Empresa'}</p>
+        <p className="text-white/70 text-xs">Seu negócio</p>
+      </div>
+    </div>
+    <div className="p-4 bg-gray-50">
+      <div className="w-full py-2 rounded-lg text-white text-sm font-medium text-center"
+        style={{ backgroundColor: companyData.primary_color }}>Agendar agora</div>
+    </div>
+  </div>
+</div>
               <p className="text-xs text-gray-400">* Clique em "Salvar Alterações" para aplicar a cor na página pública.</p>
             </div>
           )}

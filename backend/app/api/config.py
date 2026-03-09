@@ -231,6 +231,7 @@ def update_company():
         if 'phone' in data: company.phone = data['phone']
         if 'address' in data: company.address = data['address']
         if 'primary_color' in data: company.primary_color = data['primary_color']
+        if 'header_image_url' in data: company.header_image_url = data['header_image_url']
         db.session.commit()
         return jsonify({'message': 'Empresa atualizada com sucesso'}), 200
     except Exception as e:
