@@ -308,7 +308,35 @@ def update_appointment(appointment_id):
             appointment.notes = data['notes']
         
         if 'status' in data:
+            old_status = appointment.status
             appointment.status = data['status']
+            
+            if data['status'] == 'completed' and old_status != 'completed':
+                if appointment.service_price and float(appointment.service_price) > 0:
+                    from app.models.financial import Transaction, FinancialCategory
+                    from datetime import date
+                    category = FinancialCategory.query.filter_by(
+                        company_id=company_id, type='income', name='Serviços'
+                    ).first()
+                    if not category:
+                        category = FinancialCategory(
+                            company_id=company_id, type='income', name='Serviços'
+                        )
+                        db.session.add(category)
+                        db.session.flush()
+                    transaction = Transaction(
+                        company_id=company_id,
+                        category_id=category.id,
+                        customer_id=appointment.customer_id,
+                        appointment_id=appointment.id,
+                        type='income',
+                        amount=appointment.service_price,
+                        description=f'Serviço concluído: {appointment.service_name or "Atendimento"}',
+                        transaction_date=date.today(),
+                        payment_method='cash',
+                        status='completed'
+                    )
+                    db.session.add(transaction)
         
         db.session.commit()
 
