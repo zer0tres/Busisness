@@ -105,10 +105,13 @@ def google_callback():
 
         # Encontrar usuário no banco
         user = User.query.filter_by(email=email).first()
+        
+        # Se nao existe, redirecionar para registro com email preenchido
         if not user:
-            user = User.query.filter_by(is_active=True).first()
-        if not user:
-            return redirect(f"{_frontend()}/login?error=user_not_found")
+            name = user_info.get("name", "")
+            import urllib.parse
+            params = urllib.parse.urlencode({"email": email, "name": name, "from_google": "1"})
+            return redirect(f"{_frontend()}/register?{params}")
 
         # Salvar refresh_token na empresa
         if refresh_token_google:

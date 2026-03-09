@@ -11,9 +11,15 @@ const BUSINESS_TYPES = [
 
 export default function Register() {
   const navigate = useNavigate();
+  const params = new URLSearchParams(window.location.search);
   const [form, setForm] = useState({
-    name: '', email: '', password: '', confirm_password: '',
-    company_name: '', business_type: 'outros', phone: '',
+    name: params.get('name') || '',
+    email: params.get('email') || '',
+    password: '',
+    confirm_password: '',
+    company_name: '',
+    business_type: 'outros',
+    phone: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
