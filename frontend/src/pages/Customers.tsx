@@ -6,6 +6,18 @@ import { toast } from 'sonner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TableSkeleton from '../components/TableSkeleton';
 
+
+const maskPhone = (v: string) => {
+  v = v.replace(/\D/g, '').slice(0, 11);
+  if (v.length <= 10) return v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  return v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+};
+
+const maskCPF = (v: string) => {
+  v = v.replace(/\D/g, '').slice(0, 11);
+  return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+};
+
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -214,13 +226,13 @@ export default function Customers() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Telefone *</label>
-                  <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: maskPhone(e.target.value) })}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm" placeholder="(99) 99999-9999" required />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">CPF</label>
-                <input type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })}
+                <input type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm" placeholder="000.000.000-00" />
               </div>
               <div>
