@@ -31,6 +31,9 @@ class Appointment(db.Model):
     # Google Calendar
     google_event_id = db.Column(db.String(255), nullable=True)
 
+    employee_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    employee = db.relationship('User', backref='appointments', lazy=True, foreign_keys=[employee_id])
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -51,6 +54,8 @@ class Appointment(db.Model):
             'service_price': self.service_price,
             'notes': self.notes,
             'status': self.status,
+            'employee_id': self.employee_id,
+            'employee_name': self.employee.name if self.employee else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

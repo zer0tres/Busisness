@@ -13,6 +13,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), default='owner', nullable=False)
     
     # Relacionamentos
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=True)
@@ -43,6 +44,7 @@ class User(db.Model):
             'name': self.name,
             'is_active': self.is_active,
             'is_admin': self.is_admin,
+            'role': self.role,
             'company_id': self.company_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
