@@ -237,3 +237,9 @@ def update_company():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/admin/slugs', methods=['GET'])
+def list_slugs():
+    from app.models.company import Company
+    companies = Company.query.all()
+    return jsonify([{'id': c.id, 'name': c.name, 'slug': c.slug} for c in companies])

@@ -29,7 +29,16 @@ def register():
         # Criar empresa se fornecida
         company = None
         if data.get('company_name'):
-            slug = data['company_name'].lower().replace(' ', '-')
+            import unicodedata
+            def make_slug(text):
+                text = unicodedata.normalize('NFKD', text)
+                text = ''.join(c for c in text if not unicodedata.combining(c))
+                text = text.lower().strip()
+                text = text.replace(' ', '-')
+                text = ''.join(c for c in text if c.isalnum() or c == '-')
+                text = '-'.join(p for p in text.split('-') if p)
+                return text
+            slug = make_slug(data['company_name'])
             
             counter = 1
             original_slug = slug
