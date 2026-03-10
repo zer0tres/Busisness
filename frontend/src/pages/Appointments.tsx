@@ -133,6 +133,13 @@ export default function Appointments() {
     catch { return dateString; }
   };
 
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes} min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m === 0 ? `${h}h` : `${h}h ${m}min`;
+  };
+
   const formatDateShort = (dateString: string) => {
     try { return format(parseISO(dateString), "dd/MM", { locale: ptBR }); }
     catch { return dateString; }
@@ -219,7 +226,7 @@ export default function Appointments() {
                 <Clock className="w-3.5 h-3.5" />
                 {appt.appointment_time}
               </span>
-              <span>{appt.duration_minutes} min</span>
+              <span>{formatDuration(appt.duration_minutes)}</span>
               <span className="ml-auto font-semibold text-gray-800">
                 R$ {appt.service_price.toFixed(2)}
               </span>
@@ -281,7 +288,7 @@ export default function Appointments() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">{appt.service_name}</td>
-                <td className="px-6 py-4 text-center text-sm text-gray-600">{appt.duration_minutes} min</td>
+                <td className="px-6 py-4 text-center text-sm text-gray-600">{formatDuration(appt.duration_minutes)}</td>
                 <td className="px-6 py-4 text-center"><StatusBadge status={appt.status} /></td>
                 <td className="px-6 py-4 text-right font-medium text-gray-900">R$ {appt.service_price.toFixed(2)}</td>
                 <td className="px-6 py-4 text-right">
@@ -341,8 +348,12 @@ export default function Appointments() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Duração (min) *</label>
-                  <input type="number" min="15" step="15" value={formData.duration_minutes} onChange={e => setFormData({ ...formData, duration_minutes: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm" required />
+                  <select value={formData.duration_minutes} onChange={e => setFormData({ ...formData, duration_minutes: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm" required>
+                    {[15,30,45,60,90,120,150,180,210,240,270,300,330,360,420,480,540,600,660,720].map(m => (
+                      <option key={m} value={m}>{m < 60 ? `${m} min` : m % 60 === 0 ? `${m/60}h` : `${Math.floor(m/60)}h ${m%60}min`}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

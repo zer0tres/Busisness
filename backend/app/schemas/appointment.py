@@ -42,8 +42,8 @@ class AppointmentSchema:
         if data.get('duration_minutes'):
             try:
                 duration = int(data['duration_minutes'])
-                if duration < 15 or duration > 480:  # Entre 15 min e 8 horas
-                    errors['duration_minutes'] = 'Duração deve estar entre 15 e 480 minutos'
+                if duration < 15 or duration > 720:  # Entre 15 min e 12 horas
+                    errors['duration_minutes'] = 'Duração deve estar entre 15 minutos e 12 horas'
             except (ValueError, TypeError):
                 errors['duration_minutes'] = 'Duração deve ser um número'
         
