@@ -15,6 +15,7 @@ def create_app(config_name='default'):
     
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
     
     # Inicializar extensões
     db.init_app(app)

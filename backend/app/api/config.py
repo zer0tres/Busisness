@@ -220,7 +220,7 @@ def update_company():
     if not company_id:
         return jsonify({'error': 'Usuário sem empresa associada'}), 403
 
-    data = request.get_json()
+    data = request.get_json(force=True, silent=True) or {}
     company = Company.query.get(company_id)
     if not company:
         return jsonify({'error': 'Empresa não encontrada'}), 404
