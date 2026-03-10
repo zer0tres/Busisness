@@ -19,12 +19,17 @@ export default function Appointments() {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; appointment: Appointment | null }>({
     isOpen: false, appointment: null
   });
+  const [employees, setEmployees] = useState<{id:number;name:string;role:string}[]>([]);
   const [formData, setFormData] = useState({
     customer_id: '', appointment_date: '', appointment_time: '',
-    duration_minutes: 60, service_name: '', service_price: 0, notes: '', status: 'pending'
+    duration_minutes: 60, service_name: '', service_price: 0, notes: '', status: 'pending', employee_id: ''
   });
 
-  useEffect(() => { loadAppointments(); loadCustomers(); }, []);
+  useEffect(() => { loadAppointments(); loadCustomers(); loadEmployees(); }, []);
+
+  const loadEmployees = async () => {
+    try { const r = await api.get('/employees'); setEmployees(r.data); } catch {}
+  };
 
   const loadAppointments = async () => {
     try {
@@ -65,14 +70,15 @@ export default function Appointments() {
         service_name: appointment.service_name,
         service_price: appointment.service_price,
         notes: appointment.notes || '',
-        status: appointment.status
+        status: appointment.status,
+        employee_id: (appointment as any).employee_id?.toString() || ''
       });
     } else {
       setEditingAppointment(null);
       setFormData({
         customer_id: '', appointment_date: new Date().toISOString().split('T')[0],
         appointment_time: '09:00', duration_minutes: 60,
-        service_name: '', service_price: 0, notes: '', status: 'pending'
+        service_name: '', service_price: 0, notes: '', status: 'pending', employee_id: ''
       });
     }
     setShowModal(true);
@@ -353,6 +359,16 @@ export default function Appointments() {
                   </select>
                 </div>
               </div>
+              {formData.status === 'completed' && employees.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Funcionario que atendeu</label>
+                  <select value={formData.employee_id} onChange={e => setFormData({ ...formData, employee_id: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm">
+                    <option value="">Selecionar funcionario...</option>
+                    {employees.map(e => <option key={e.id} value={e.id}>{e.name} {e.role === 'owner' ? '(Patrao)' : ''}</option>)}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Observações</label>
                 <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}

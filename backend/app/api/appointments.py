@@ -307,6 +307,9 @@ def update_appointment(appointment_id):
         if 'notes' in data:
             appointment.notes = data['notes']
         
+        if 'employee_id' in data:
+            appointment.employee_id = data['employee_id'] if data['employee_id'] else None
+        
         if 'status' in data:
             old_status = appointment.status
             appointment.status = data['status']
