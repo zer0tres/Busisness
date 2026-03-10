@@ -30,6 +30,7 @@ const DAY_LABELS: Record<string, string> = {
 
 export default function Settings() {
   const company = useAuthStore((state) => state.company);
+  const updateCompany = useAuthStore((state) => state.updateCompany);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<BusinessConfig | null>(null);
@@ -92,6 +93,7 @@ export default function Settings() {
       primary_color: companyData.primary_color,
       header_image_url: companyData.header_image_url,
     });
+    updateCompany({ primary_color: companyData.primary_color, header_image_url: companyData.header_image_url } as any);
     toast.success('Visual salvo com sucesso!', { id: tid });
   } catch { toast.error('Erro ao salvar visual', { id: tid }); }
   finally { setSaving(false); }

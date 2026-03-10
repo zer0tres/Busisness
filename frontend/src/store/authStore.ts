@@ -6,6 +6,7 @@ interface AuthState {
   company: Company | null;
   isAuthenticated: boolean;
   setAuth: (user: User, company: Company, accessToken: string, refreshToken: string) => void;
+  updateCompany: (data: Partial<Company>) => void;
   logout: () => void;
 }
 
@@ -20,6 +21,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user, company, isAuthenticated: true });
   },
   
+  updateCompany: (data) => {
+    set((state) => ({ company: state.company ? { ...state.company, ...data } : null }));
+  },
+
   logout: () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
