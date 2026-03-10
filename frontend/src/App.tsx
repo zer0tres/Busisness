@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
 import FinancialDashboard from './pages/Financial/Dashboard';
 import FinancialTransactions from './pages/Financial/Transactions';
+import Employees from './pages/Employees';
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
           <Route path="subscription" element={<Subscription />} />
           <Route path="financial/receivables" element={<Receivables />} />
           <Route path="financial/invoices" element={<Invoices />} />
+          <Route path="employees" element={<Employees />} />
         </Route>
 
         {/* 404 */}

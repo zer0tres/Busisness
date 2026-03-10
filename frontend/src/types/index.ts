@@ -4,6 +4,7 @@ export interface User {
   name: string;
   is_active: boolean;
   is_admin: boolean;
+  role: string;
   company_id: number;
   created_at: string;
   updated_at: string;
@@ -50,6 +51,14 @@ export interface Customer {
   updated_at: string;
   trial_days_remaining: number;
   can_access: boolean;
+}
+
+export interface Employee {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  is_active: boolean;
 }
 
 export interface Appointment {

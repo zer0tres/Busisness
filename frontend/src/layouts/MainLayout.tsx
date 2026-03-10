@@ -25,15 +25,20 @@ export default function MainLayout() {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  const menuItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/customers', icon: Users, label: 'Clientes' },
-    { path: '/appointments', icon: Calendar, label: 'Agendamentos' },
-    { path: '/products', icon: Package, label: 'Produtos' },
-    { path: '/financial', icon: DollarSign, label: 'Financeiro' },
-    { path: '/settings', icon: Settings, label: 'Configurações' },
-    { path: '/subscription', icon: CreditCard, label: 'Assinatura' },
+  const isEmployee = user?.role === 'employee';
+
+  const allMenuItems = [
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', ownerOnly: true },
+    { path: '/customers', icon: Users, label: 'Clientes', ownerOnly: true },
+    { path: '/appointments', icon: Calendar, label: 'Agendamentos', ownerOnly: false },
+    { path: '/products', icon: Package, label: 'Produtos', ownerOnly: true },
+    { path: '/financial', icon: DollarSign, label: 'Financeiro', ownerOnly: true },
+    { path: '/employees', icon: Users, label: 'Funcionários', ownerOnly: true },
+    { path: '/settings', icon: Settings, label: 'Configurações', ownerOnly: true },
+    { path: '/subscription', icon: CreditCard, label: 'Assinatura', ownerOnly: true },
   ];
+
+  const menuItems = allMenuItems.filter(item => !isEmployee || !item.ownerOnly);
 
   useEffect(() => {
     loadNotifications();
