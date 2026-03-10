@@ -86,6 +86,15 @@ export default function Register() {
             <input type="text" placeholder="Barbearia do João" value={form.company_name}
               onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+            {form.company_name && (() => {
+              const slug = form.company_name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+              return (
+                <div className="mt-2 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <span className="text-xs text-gray-400 shrink-0">Seu link:</span>
+                  <span className="text-xs text-blue-600 font-medium truncate">sahjo.com.br/book/{slug}</span>
+                </div>
+              );
+            })()}
           </div>
           <div>
             <label className="text-gray-600 text-sm font-medium block mb-1">Tipo de negócio *</label>
