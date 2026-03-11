@@ -42,7 +42,7 @@ export default function Settings() {
     phone: company?.phone || '',
     address: company?.address || '',
     primary_color: company?.primary_color || '#3B82F6',
-    header_image_url: (company as any)?.header_image_url || '',
+    header_image_url: company?.header_image_url || '',
   });
 
   const emptyService = { name: '', price: 0, duration: 60, description: '' };
@@ -93,7 +93,7 @@ export default function Settings() {
       primary_color: companyData.primary_color,
       header_image_url: companyData.header_image_url,
     });
-    updateCompany({ primary_color: companyData.primary_color, header_image_url: companyData.header_image_url } as any);
+    updateCompany({ primary_color: companyData.primary_color, header_image_url: companyData.header_image_url });
     toast.success('Visual salvo com sucesso!', { id: tid });
   } catch { toast.error('Erro ao salvar visual', { id: tid }); }
   finally { setSaving(false); }

@@ -22,6 +22,7 @@ export interface Company {
   address: string;
   primary_color: string;
   logo_url: string | null;
+  header_image_url: string | null;
   is_active: boolean;
   subscription_status: string;
   created_at: string;
