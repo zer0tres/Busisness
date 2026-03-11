@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { User, Mail, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Save, Eye, EyeOff, Building2, Copy } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
 import { toast } from 'sonner';
 
 export default function Profile() {
-  const { user, setAuth, company } = useAuthStore();
+  const { user, setAuth, company, updateCompany } = useAuthStore();
+  const [companyName, setCompanyName] = useState(company?.name || '');
+  const [savingCompany, setSavingCompany] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [profileData, setProfileData] = useState({
@@ -62,6 +64,19 @@ export default function Profile() {
       setSaving(false);
     }
   };
+
+  const handleSaveCompany = async () => {
+    if (!companyName.trim()) { toast.error('Nome obrigatório'); return; }
+    setSavingCompany(true);
+    try {
+      await api.put('/config/company', { name: companyName });
+      updateCompany({ name: companyName });
+      toast.success('Nome da empresa atualizado!');
+    } catch { toast.error('Erro ao atualizar nome'); }
+    finally { setSavingCompany(false); }
+  };
+
+  const makeSlug = (text: string) => text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
   const toggleShow = (field: 'current' | 'new' | 'confirm') => {
     setShowPasswords(s => ({ ...s, [field]: !s[field] }));
@@ -123,6 +138,38 @@ export default function Profile() {
           >
             <Save className="w-4 h-4" />
             {saving ? 'Salvando...' : 'Salvar dados'}
+          </button>
+        </div>
+      </div>
+
+      {/* Empresa */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-primary-500" />
+          Empresa
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Nome da empresa</label>
+            <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none text-gray-800" />
+          </div>
+          {companyName && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-xs font-medium text-blue-700 mb-1">🔗 Link público atual</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-800 font-medium flex-1 truncate">sahjo.com.br/book/{makeSlug(companyName)}</span>
+                <button type="button" onClick={() => { navigator.clipboard.writeText(`https://www.sahjo.com.br/book/${makeSlug(companyName)}`); toast.success('Link copiado!'); }}
+                  className="shrink-0 flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition">
+                  <Copy className="w-3 h-3" /> Copiar
+                </button>
+              </div>
+            </div>
+          )}
+          <button onClick={handleSaveCompany} disabled={savingCompany}
+            className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl font-medium transition disabled:opacity-50">
+            <Save className="w-4 h-4" />
+            {savingCompany ? 'Salvando...' : 'Salvar nome'}
           </button>
         </div>
       </div>

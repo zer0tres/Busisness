@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { DollarSign, CreditCard, Bell, Calendar, X, Menu, LayoutDashboard, Users, Package, Settings, LogOut, User } from 'lucide-react';
+import { DollarSign, CreditCard, Bell, Calendar, X, Menu, LayoutDashboard, Users, Package, Settings, LogOut } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
@@ -105,7 +105,7 @@ export default function MainLayout() {
             <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
-          <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <Settings className="w-4 h-4 text-gray-400 flex-shrink-0" />
         </Link>
         <button
           onClick={handleLogout}

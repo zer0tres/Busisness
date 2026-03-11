@@ -105,8 +105,8 @@ const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!['image/png', 'image/jpeg'].includes(file.type)) {
     toast.error('Use apenas PNG ou JPEG'); return;
   }
-  if (file.size > 2 * 1024 * 1024) {
-    toast.error('Imagem muito grande. Máximo 2MB'); return;
+  if (file.size > 10 * 1024 * 1024) {
+    toast.error('Imagem muito grande. Máximo 10MB'); return;
   }
   const reader = new FileReader();
   reader.onload = (ev) => {
@@ -370,7 +370,7 @@ const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
               <div className="mb-6">
   <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de Fundo do Header</label>
-  <p className="text-xs text-gray-500 mb-3">Substitui a cor sólida por uma foto no cabeçalho da página pública. PNG ou JPEG, máx. 2MB.</p>
+  <p className="text-xs text-gray-500 mb-3">Substitui a cor sólida por uma foto no cabeçalho da página pública. PNG ou JPEG, máx. 10MB.</p>
   <div className="flex items-center gap-3">
     <label className="cursor-pointer flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition border border-gray-300">
       <input type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleHeaderImageUpload} />

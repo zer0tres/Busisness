@@ -235,36 +235,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Resumo do Sistema */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Resumo do Sistema</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-              <span className="text-green-600 text-sm">✓</span>
-            </div>
-            <p className="text-gray-700">Sistema de autenticação ativo</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-              <span className="text-green-600 text-sm">✓</span>
-            </div>
-            <p className="text-gray-700">Gestão de clientes configurada</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-              <span className="text-green-600 text-sm">✓</span>
-            </div>
-            <p className="text-gray-700">Agendamentos online disponíveis</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-              <span className="text-green-600 text-sm">✓</span>
-            </div>
-            <p className="text-gray-700">Controle de estoque ativo</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
