@@ -35,8 +35,8 @@ class AppointmentSchema:
         # Serviço obrigatório (apenas em criação)
         if not is_update and not data.get('service_name'):
             errors['service_name'] = 'Nome do serviço é obrigatório'
-        elif data.get('service_name') and len(data['service_name']) < 3:
-            errors['service_name'] = 'Nome do serviço deve ter pelo menos 3 caracteres'
+        elif data.get("service_name") and len(data["service_name"].strip()) < 1:
+            errors['service_name'] = 'Nome do serviço é obrigatório'
         
         # Validar duração se fornecida
         if data.get('duration_minutes'):
