@@ -226,7 +226,22 @@ def update_company():
         return jsonify({'error': 'Empresa não encontrada'}), 404
 
     try:
-        if 'name' in data: company.name = data['name']
+        if 'name' in data:
+            import unicodedata
+            company.name = data['name']
+            new_slug = unicodedata.normalize('NFKD', data['name'])
+            new_slug = ''.join(ch for ch in new_slug if not unicodedata.combining(ch))
+            new_slug = new_slug.lower().strip().replace(' ', '-')
+            new_slug = ''.join(ch for ch in new_slug if ch.isalnum() or ch == '-')
+            new_slug = '-'.join(p for p in new_slug.split('-') if p)
+            # Garantir slug único
+            base_slug = new_slug
+            counter = 1
+            from app.models.company import Company as Co
+            while Co.query.filter(Co.slug == new_slug, Co.id != company.id).first():
+                new_slug = f'{base_slug}-{counter}'
+                counter += 1
+            company.slug = new_slug
         if 'email' in data: company.email = data['email']
         if 'phone' in data: company.phone = data['phone']
         if 'address' in data: company.address = data['address']

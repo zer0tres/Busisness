@@ -69,8 +69,9 @@ export default function Profile() {
     if (!companyName.trim()) { toast.error('Nome obrigatório'); return; }
     setSavingCompany(true);
     try {
+      const slug = makeSlug(companyName);
       await api.put('/config/company', { name: companyName });
-      updateCompany({ name: companyName });
+      updateCompany({ name: companyName, slug } as any);
       toast.success('Nome da empresa atualizado!');
     } catch { toast.error('Erro ao atualizar nome'); }
     finally { setSavingCompany(false); }
