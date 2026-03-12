@@ -3,7 +3,7 @@ import os
 
 resend.api_key = os.environ.get('RESEND_API_KEY', 're_VwfJjHYr_5LVt9WtonYPGD5RbmfSHo4xG')
 
-FROM_EMAIL = os.environ.get('FROM_EMAIL', 'onboarding@resend.dev')
+FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@sahjo.com.br')
 
 
 def _appointment_card(service, date, time, extra_rows=''):
