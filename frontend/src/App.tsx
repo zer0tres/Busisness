@@ -18,6 +18,7 @@ import MainLayout from './layouts/MainLayout';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import Landing from './pages/Landing';
 import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
 import FinancialDashboard from './pages/Financial/Dashboard';
 import FinancialTransactions from './pages/Financial/Transactions';
@@ -29,6 +30,7 @@ function App() {
       <Toaster position="top-right" richColors />
       <Routes>
         {/* Rotas públicas - SEM login, SEM sidebar */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -48,7 +50,6 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="customers" element={<Customers />} />
           <Route path="products" element={<Products />} />
