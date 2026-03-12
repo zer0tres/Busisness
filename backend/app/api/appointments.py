@@ -1,3 +1,4 @@
+import os
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta, time
@@ -9,6 +10,7 @@ from app.models.user import User
 from app.schemas.appointment import AppointmentSchema
 from app.models.company import Company
 from app.utils.google_calendar import create_calendar_event, update_calendar_event, delete_calendar_event
+from app.services.email import send_booking_confirmation, send_booking_notification, send_reminder
 
 def get_user_company_id():
     """Obter company_id do usuário logado"""
@@ -237,6 +239,35 @@ def create_appointment():
         except Exception as cal_err:
             print(f"[Calendar] Erro não crítico: {cal_err}")
 
+        # Enviar emails
+        try:
+            date_fmt = appointment_date.strftime('%d/%m/%Y')
+            time_fmt = appointment_time.strftime('%H:%M')
+            company = Company.query.get(company_id)
+            if customer.email:
+                send_booking_confirmation(
+                    customer_email=customer.email,
+                    customer_name=customer.name,
+                    service_name=data['service_name'],
+                    date=date_fmt,
+                    time=time_fmt,
+                    company_name=company.name if company else '',
+                    company_phone=company.phone if company else None,
+                )
+            if company and company.email:
+                send_booking_notification(
+                    owner_email=company.email,
+                    company_name=company.name,
+                    customer_name=customer.name,
+                    customer_email=customer.email or '',
+                    customer_phone=customer.phone or '',
+                    service_name=data['service_name'],
+                    date=date_fmt,
+                    time=time_fmt,
+                )
+        except Exception as email_err:
+            print(f'[Email] Erro não crítico: {email_err}')
+
         return jsonify({
             'message': 'Agendamento criado com sucesso',
             'appointment': appointment.to_dict(include_customer=True)
@@ -435,3 +466,57 @@ def get_notifications():
         'notifications': notifications,
         'count': len(notifications)
     }), 200
+
+@api_bp.route('/internal/send-reminders', methods=['POST'])
+def send_reminders():
+    """Endpoint chamado por cron externo para enviar lembretes D-1"""
+    secret = request.headers.get('X-Cron-Secret', '')
+    expected = os.environ.get('CRON_SECRET', 'sahjo-cron-2026')
+    if secret != expected:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    from datetime import date as date_type, timedelta
+    tomorrow = date_type.today() + timedelta(days=1)
+    
+    appointments = Appointment.query.filter_by(
+        appointment_date=tomorrow
+    ).filter(
+        Appointment.status.in_(['pending', 'confirmed'])
+    ).all()
+
+    sent = 0
+    for apt in appointments:
+        try:
+            company = Company.query.get(apt.company_id)
+            customer = Customer.query.get(apt.customer_id)
+            if not company or not customer:
+                continue
+            date_fmt = apt.appointment_date.strftime('%d/%m/%Y')
+            time_fmt = apt.appointment_time.strftime('%H:%M')
+            # Lembrete para o cliente
+            if customer.email:
+                send_reminder(
+                    recipient_email=customer.email,
+                    recipient_name=customer.name,
+                    service_name=apt.service_name,
+                    date=date_fmt, time=time_fmt,
+                    company_name=company.name,
+                    is_owner=False,
+                )
+                sent += 1
+            # Lembrete para o lojista
+            if company.email:
+                send_reminder(
+                    recipient_email=company.email,
+                    recipient_name=company.name,
+                    service_name=apt.service_name,
+                    date=date_fmt, time=time_fmt,
+                    company_name=company.name,
+                    is_owner=True,
+                    customer_name=customer.name,
+                )
+                sent += 1
+        except Exception as e:
+            print(f'[Reminder] Erro apt {apt.id}: {e}')
+
+    return jsonify({'sent': sent, 'date': tomorrow.isoformat()}), 200
